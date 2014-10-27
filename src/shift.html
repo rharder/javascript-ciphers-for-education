@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<script src="shift.js" ></script>
+<script language="javascript"><!--
+function shiftclick(){
+	var out = document.getElementById('shiftoutput');
+	out.value = ShiftCipher.shiftText('bar',4);
+}
+// --></script>
+</head>
+<body>
+<h1>Shift Cipher</h1>
+Input:
+<textarea id="shiftinput"></textarea>
+
+Output:
+<textarea id="shiftoutput"></textarea>
+<input type="button" OnClick="shiftClick();" value="Shift!" />
+
+</body>
+</html>
