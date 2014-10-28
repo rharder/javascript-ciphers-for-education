@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<script src="js/libs/jquery/jquery.js"></script>
+<!--script src="js/libs/highcharts/standalone-framework.js"></script-->
+<script src="js/libs/highcharts/highcharts.js"></script>
+<script language="javascript"><!--
+// Backup graph libraries to try:
+// http://raphaeljs.com
+// https://github.com/eoinmurray/histogram
+// https://google-developers.appspot.com/chart/interactive/docs/quick_start
+var ShiftCipher = {
+    
+    ALPHABET_LOWER : ['a','b','c','d','e','f','g','h','i','j','k','l','m',
+                          'n','o','p','q','r','s','t','u','v','w','x','y','z'],
+    
+    ALPHABET_UPPER : ['A','B','C','D','E','F','G','H','I','J','K','L','M',
+                          'N','O','P','Q','R','S','T','U','V','W','X','Y','Z'],
+
+    // http://www.cryptograms.org/letter-frequencies.php
+    ENGLISH_FREQUENCIES : [0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228,
+                           0.02015, 0.06094, 0.06966, 0.00153, 0.00772, 0.04025,
+                           0.02406, 0.06749, 0.07507, 0.01929, 0.00095, 0.05987,
+                           0.06327, 0.09056, 0.02758, 0.00978, 0.02360, 0.00150,
+                           0.01974, 0.00074],
+
+    freqChart : null,
+
+    /**
+     * Shifts the given text, maintaining case and preserving
+     * non-latin characters (non a-z).  For example a call
+     * with the text "cat" and a shift of 2 would return "ecv".
+     */
+    shiftText: function ( text, shift ){
+        var output = '';
+        var c;
+        for( var i = 0; i < text.length; i++ ){
+            c = text.charCodeAt(i);
+            if( c >= 65 && c <= 90 ){
+                output += String.fromCharCode( (c - 65 + shift ) % 26 + 65 );
+            } else if( c >= 97 && c <= 122 ){
+                output += String.fromCharCode( (c - 97 + shift) %26 + 97 );
+            } else {
+                output += text.charAt(i);
+            }
+        }
+        return output;
+    },
+    
+    
+    shiftArray : function ( input, shift ){
+        var output = [];
+        for( var i = 0; i < input.length; i++ ){
+            output[i] = input[ (i+shift) % input.length ];
+        }
+        return output;
+    },
+    
+    
+    /**
+     * Returns the frequencies of characters in the text.
+     * The returned value is a dictionary with every character
+     * in the source text as a key (even punctuation, etc).
+     */
+    frequenciesCountChars: function( text ){
+        var freqs = {};
+        var c;
+        for( var i = 0; i < text.length; i++ ){
+            c = text.charAt(i);
+            freqs[c] = freqs[c] ? freqs[c] + 1 : 1;
+        }
+        return freqs;
+    },
+    
+    frequenciesPaddedAlphabet : function( text ){
+        var rawFreqs = this.frequenciesCountChars( text );
+        var paddedFreqs = [];
+        var totalChars = 0;
+        for( var i = 0; i < this.ALPHABET_UPPER.length; i++ ){
+            var count = 0;
+            if( !isNaN( rawFreqs[this.ALPHABET_LOWER[i]] ) ){
+                count += rawFreqs[this.ALPHABET_LOWER[i]]
+            }
+            if( !isNaN( rawFreqs[this.ALPHABET_UPPER[i]] ) ){
+                count += rawFreqs[this.ALPHABET_UPPER[i]]
+            }
+            paddedFreqs[ i ] = count;
+            totalChars += count;
+        }
+        for( var i = 0; i < paddedFreqs.length; i++ ){
+            paddedFreqs[i] = 1.0 * paddedFreqs[i] / totalChars;
+        }
+        return paddedFreqs;
+    },
+    
+    
+    initChart : function( container ){
+        $('#container').highcharts({
+            chart: {
+                renderTo: 'container',
+                type: 'column'
+            },
+            title: {
+                text: 'Frequency Analysis'
+            },
+            xAxis: {
+                categories: this.ALPHABET_UPPER
+            },
+            yAxis: {
+                title: {
+                    text: 'Frequency'
+                }
+            },
+            series: [{
+                name: 'English',
+                data: this.ENGLISH_FREQUENCIES
+            }, {
+                name: 'Ciphertext',
+                data: this.shiftArray(paddedFreqs,shift)
+            }]
+        });
+    },
+    
+    /**
+     * Displays frequency data inside the given element.
+     */
+    displayFrequencies: function( freqEl, text, shift ){
+        var paddedFreqs = this.frequenciesPaddedAlphabet( text );
+        freqEl.innerHTML = "" + paddedFreqs.length + ": " ;
+        for( var i = 0; i < paddedFreqs.length; i++ ){
+            freqEl.innerHTML +=  paddedFreqs[i] + ",";
+        }
+        
+        
+        //if( this.freqChart == null ){
+        //if( $('#container').highcharts == null ){
+        //// highcharts.com
+            //this.freqChart = new Highcharts.Chart({
+            
+            
+        //} else {
+        //    this.freqChart.series[1].setData(this.shiftArray(paddedFreqs,shift));
+            //$('#container').highcharts.series[1].setData(this.shiftArray(paddedFreqs,shift));
+        //}
+    },
+    
+
+    addEvent: function( target, eventName, func, capture ){
+        if( target.addEventListener ){
+            target.addEventListener( eventName, func, capture );
+            return true;
+        }   // end if: addEventListener
+        else if( target.attachEvent )
+            return target.attachEvent( 'on'+eventName, func );
+    },  // end addEvent
+
+
+    removeEvent: function( target, eventName, func, capture ){
+        if( target.removeEventListener ){
+            target.removeEventListener( eventName, func, capture );
+            return true;
+        }   // end if: removeEventListener
+        else if( target.detachEvent )
+            return target.detachEvent( 'on'+eventName, func );
+    }   // end removeEvent
+
+}   // end ShiftCipher
+
+function shiftInputChange(){
+    var inEl = document.getElementById('shiftinput');
+    var outEl = document.getElementById('shiftoutput');
+    var shiftEl = document.getElementById('shiftamount');
+    var freqEl = document.getElementById('freqout');
+    
+    outEl.value = ShiftCipher.shiftText(inEl.value,parseInt(shiftEl.value));
+    ShiftCipher.displayFrequencies( freqEl, outEl.value, parseInt(shiftEl.value) );
+    
+    
+}
+
+function pageInit(){
+    var inEl = document.getElementById('shiftinput');
+    var outEl = document.getElementById('shiftoutput');
+    var shiftEl = document.getElementById('shiftamount');
+    ShiftCipher.addEvent(inEl,'input',shiftInputChange,false);
+    ShiftCipher.addEvent(inEl,'onpropertychange',shiftInputChange,false);
+    ShiftCipher.initChart('container');
+}
+
+ShiftCipher.addEvent(window,'load',pageInit,false);
+
+
+// --></script>
+</head>
+<body>
+<h1>Shift Cipher</h1>
+Input:
+<textarea id="shiftinput"></textarea>
+
+Shift:
+<input type="text" id="shiftamount" value="13" />
+
+Output:
+<textarea id="shiftoutput"></textarea>
+
+<div id="freqout">freqs</div>
+<div id="container" style="width:80%; height:200px;"></div>
+
+</body>
+</html>
