@@ -13,17 +13,21 @@
 // https://github.com/eoinmurray/histogram
 // https://google-developers.appspot.com/chart/interactive/docs/quick_start
 
-var Foo = {
-    _text : 'foobar',
-    get text() { return this._text; },
-    set text(t) { this._text = t; }
-};
-var f = Object.create(Foo);
-var g = Object.create(Foo);
-f.text = 'foo';
-g.text = 'goo';
-//alert('f: ' + f.text + ', g: ' + g.text );
-//alert( foo.text );
+/*
+Sl, M lezi wpmttih xli wyvpc fsrhw sj ievxl, 
+Erh hergih xli womiw sr peyklxiv-wmpzivih amrkw; 
+Wyraevh M'zi gpmqfih erh nsmrih xli xyqfpmrk qmvxl sj wyr-wtpmx gpsyhw - 
+erh hsri e lyrhvih xlmrkw Csy lezi rsx hvieqih sj - 
+aliipih erh wsevih erh wayrk lmkl mr xli wyrpmx wmpirgi. 
+Lszivmrk xlivi M'zi glewih xli wlsyxmrk amrh epsrk 
+erh jpyrk qc iekiv gvejx xlvsykl jssxpiww leppw sj emv.
+"Yt, yt xli psrk hipmvmsyw fyvrmrk fpyi 
+M'zi xsttih xli amrh-waitx limklxw amxl iewc kvegi, 
+alivi riziv pevo, sv izir iekpi, jpia; 
+erh, almpi amxl wmpirx, pmjxmrk qmrh M'zi xvsh 
+xli lmkl yrxviwtewwih wergxmxc sj wtegi, 
+tyx syx qc lerh erh xsyglih xli jegi sj Ksh.
+ */
 
 var ShiftCipher = {
     
@@ -42,7 +46,7 @@ var ShiftCipher = {
 
     _freqChart : null,
     _cipherText : "",
-    _shift : 0,
+    _originalShift : 0,
     _paddedFrequencies : [],
     _plainText : "",
     _listeners : {},
@@ -65,6 +69,7 @@ var ShiftCipher = {
     
     get cipherText() { return this._cipherText; },
     set cipherText ( text ){
+        if( text === this._cipherText ) return;
         this._cipherText = text;
         this.updatePlainText();
         this.updateFrequencies();
@@ -72,12 +77,13 @@ var ShiftCipher = {
         this.fireEvent( "cipherTextChanged", text );
     },
     
-    get shift() { return this._shift; },
-    set shift ( shift ){
-        this._shift = shift;
+    get originalShift() { return this._originalShift; },
+    set originalShift ( shift ){
+        if( shift === this._originalShift ) return;
+        this._originalShift = shift;
         this.updatePlainText();
         this.updateChart();
-        this.fireEvent( "shiftChanged", shift );
+        this.fireEvent( "originalShiftChanged", shift );
     },
     
     get plainText() {
@@ -86,9 +92,7 @@ var ShiftCipher = {
         }
         return this._plainText;
     },
-    //set plainText( text ){
-    //    this._plainText = text;
-    //},
+    set plainText( text ){ this._plainText = text; },
     
     get paddedFrequencies() { return this._paddedFrequencies; },
     set paddedFrequencies(pf) { this._paddedFrequencies = pf; },
@@ -100,15 +104,15 @@ var ShiftCipher = {
      * non-latin characters (non a-z).  For example a call
      * with the text "cat" and a shift of 2 would return "ecv".
      */
-    shiftText : function ( text, shift ){
+    decipher : function ( text, origShift ){
         var output = '';
         var c;
         for( var i = 0; i < text.length; i++ ){
             c = text.charCodeAt(i);
             if( c >= 65 && c <= 90 ){
-                output += String.fromCharCode( (c - 65 + shift ) % 26 + 65 );
+                output += String.fromCharCode( (c - 65 + 26-origShift ) % 26 + 65 );
             } else if( c >= 97 && c <= 122 ){
-                output += String.fromCharCode( (c - 97 + shift) %26 + 97 );
+                output += String.fromCharCode( (c - 97 + 26-origShift) %26 + 97 );
             } else {
                 output += text.charAt(i);
             }
@@ -117,10 +121,10 @@ var ShiftCipher = {
     },
     
     
-    shiftArray : function ( input, shift ){
+    shiftArray : function ( input, origShift/*0..26*/ ){
         var output = [];
         for( var i = 0; i < input.length; i++ ){
-            output[i] = input[ (2600+i-shift) % input.length ];
+            output[i] = input[ (i+origShift) % input.length ];
         }
         return output;
     },
@@ -194,12 +198,12 @@ var ShiftCipher = {
     },
     
     updatePlainText : function(){
-        this.plainText = this.shiftText( this.cipherText, this.shift );
+        this.plainText = this.decipher( this.cipherText, this.originalShift );
         this.fireEvent( "plainTextChanged", this.plainText );
     },
     
     updateChart : function(){
-        this._freqChart.series[1].setData(this.shiftArray(this.paddedFrequencies,this.shift));
+        this._freqChart.series[1].setData(this.shiftArray(this.paddedFrequencies,this.originalShift));
     },
     
     /**
@@ -244,7 +248,7 @@ function shiftInputChange(){
 function shiftAmountChange(){
     var shiftEl = document.getElementById('shiftamount');
     
-    shiftCipher.shift = parseInt(shiftEl.value) ;
+    shiftCipher.originalShift = parseInt(shiftEl.value) ;
     
 //    outEl.value = ShiftCipher.shiftText(inEl.value,parseInt(shiftEl.value));
 //    shiftCipher.updateFrequencies( outEl.value, parseInt(shiftEl.value) );
@@ -267,8 +271,13 @@ function pageInit(){
     shiftCipher.addEvent(shiftEl,'onpropertychange',shiftAmountChange,false);
     
     shiftCipher.addEventListener( "plainTextChanged", function(text){
-        outEl.innerHTML = text;
+        outEl.innerHTML = "Plain: " + text;
     });
+    shiftCipher.addEventListener( "originalShiftChanged", function(text){
+        shiftEl.value = text;
+        $( "#slider" ).slider({ value: text });
+    });
+    shiftCipher.cipherText = inEl.innerHTML;
 }
 
 var shiftCipher = Object.create( ShiftCipher );
@@ -279,13 +288,13 @@ $( document ).ready(function() {
 });
 $(function() {
     $( "#slider" ).slider({
-          value:0,
+          value:4,
           min: 0,
           max: 26,
           step: 1,
-          //slide: function( event, ui ) {
-            //shiftCipher.shift = ui.value ;
-          //}
+          slide: function( event, ui ) {
+            shiftCipher.originalShift = ui.value ;
+          }
         });
 });
 
@@ -302,9 +311,21 @@ shiftCipher.watch("shift",function(prop,oldVal,newVal){
     <div id="el"></div>
 <h1>Shift Cipher</h1>
 Input:
-<textarea id="shiftinput"></textarea>
+<textarea id="shiftinput">Sl, M lezi wpmttih xli wyvpc fsrhw sj ievxl, 
+Erh hergih xli womiw sr peyklxiv-wmpzivih amrkw; 
+Wyraevh M'zi gpmqfih erh nsmrih xli xyqfpmrk qmvxl sj wyr-wtpmx gpsyhw - 
+erh hsri e lyrhvih xlmrkw Csy lezi rsx hvieqih sj - 
+aliipih erh wsevih erh wayrk lmkl mr xli wyrpmx wmpirgi. 
+Lszivmrk xlivi M'zi glewih xli wlsyxmrk amrh epsrk 
+erh jpyrk qc iekiv gvejx xlvsykl jssxpiww leppw sj emv.
+"Yt, yt xli psrk hipmvmsyw fyvrmrk fpyi 
+M'zi xsttih xli amrh-waitx limklxw amxl iewc kvegi, 
+alivi riziv pevo, sv izir iekpi, jpia; 
+erh, almpi amxl wmpirx, pmjxmrk qmrh M'zi xvsh 
+xli lmkl yrxviwtewwih wergxmxc sj wtegi, 
+tyx syx qc lerh erh xsyglih xli jegi sj Ksh.</textarea>
 
-Shift:
+Original Shift:
 <input type="text" id="shiftamount" value="2" />
 <div id="slider"  ></div>
 
