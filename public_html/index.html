@@ -45,6 +45,23 @@ var ShiftCipher = {
     _shift : 0,
     _paddedFrequencies : [],
     _plainText : "",
+    _listeners : {},
+    
+    addEventListener : function( eventType, callback ){
+        if( this._listeners[eventType] == null ){
+            this._listeners[eventType] = [callback];
+        } else {
+            this._listeners[eventType].push(callback);
+        }
+    },
+    
+    fireEvent : function( eventType, arg ){
+        if( this._listeners[eventType] != null ){
+            this._listeners[eventType].map(function(callback){
+                callback(arg);
+            });
+        }
+    },
     
     get cipherText() { return this._cipherText; },
     set cipherText ( text ){
@@ -52,6 +69,7 @@ var ShiftCipher = {
         this.updatePlainText();
         this.updateFrequencies();
         this.updateChart();
+        this.fireEvent( "cipherTextChanged", text );
     },
     
     get shift() { return this._shift; },
@@ -59,6 +77,7 @@ var ShiftCipher = {
         this._shift = shift;
         this.updatePlainText();
         this.updateChart();
+        this.fireEvent( "shiftChanged", shift );
     },
     
     get plainText() {
@@ -67,9 +86,9 @@ var ShiftCipher = {
         }
         return this._plainText;
     },
-    set plainText( text ){
-        this._plainText = text;
-    },
+    //set plainText( text ){
+    //    this._plainText = text;
+    //},
     
     get paddedFrequencies() { return this._paddedFrequencies; },
     set paddedFrequencies(pf) { this._paddedFrequencies = pf; },
@@ -176,6 +195,7 @@ var ShiftCipher = {
     
     updatePlainText : function(){
         this.plainText = this.shiftText( this.cipherText, this.shift );
+        this.fireEvent( "plainTextChanged", this.plainText );
     },
     
     updateChart : function(){
@@ -246,7 +266,9 @@ function pageInit(){
     shiftCipher.addEvent(shiftEl,'input',shiftAmountChange,false);
     shiftCipher.addEvent(shiftEl,'onpropertychange',shiftAmountChange,false);
     
-    
+    shiftCipher.addEventListener( "plainTextChanged", function(text){
+        outEl.innerHTML = text;
+    });
 }
 
 var shiftCipher = Object.create( ShiftCipher );
@@ -261,9 +283,9 @@ $(function() {
           min: 0,
           max: 26,
           step: 1,
-          slide: function( event, ui ) {
-            shiftCipher.shift = ui.value ;
-          }
+          //slide: function( event, ui ) {
+            //shiftCipher.shift = ui.value ;
+          //}
         });
 });
 
