@@ -49,7 +49,9 @@ var ShiftCipher = {
     _originalShift : 0,
     _paddedFrequencies : [],
     _plainText : "",
+    _plainTextCache : {},
     _listeners : {},
+    
     
     addEventListener : function( eventType, callback ){
         if( this._listeners[eventType] == null ){
@@ -71,28 +73,33 @@ var ShiftCipher = {
     set cipherText ( text ){
         if( text === this._cipherText ) return;
         this._cipherText = text;
-        this.updatePlainText();
-        this.updateFrequencies();
+        this._plainTextCache = {}; // Clear cached deciphered contents
+        this.paddedFrequencies = this.frequenciesPaddedAlphabet( this.cipherText );
+        //this.updateFrequencies();
         this.updateChart();
-        this.fireEvent( "cipherTextChanged", text );
+        this.fireEvent( "cipherTextChanged", this );
+        this.fireEvent( "plainTextChanged", this );
     },
     
     get originalShift() { return this._originalShift; },
     set originalShift ( shift ){
         if( shift === this._originalShift ) return;
         this._originalShift = shift;
-        this.updatePlainText();
         this.updateChart();
-        this.fireEvent( "originalShiftChanged", shift );
+        this.fireEvent( "originalShiftChanged", this );
+        this.fireEvent( "plainTextChanged", this );
     },
     
     get plainText() {
-        if( this._plainText == null ){
-            this.updatePlainText();
+        if( this._plainTextCache[this.originalShift] == null ){
+            this._plainTextCache[this.originalShift] = 
+                this.decipher( this.cipherText, this.originalShift );
         }
-        return this._plainText;
+        return this._plainTextCache[this.originalShift];
     },
-    set plainText( text ){ this._plainText = text; },
+    //set plainText( text ){ 
+    //    this._plainTextCache[this.originalShift] = text;
+    //},
     
     get paddedFrequencies() { return this._paddedFrequencies; },
     set paddedFrequencies(pf) { this._paddedFrequencies = pf; },
@@ -175,6 +182,13 @@ var ShiftCipher = {
                     renderTo: 'container',
                     type: 'column'
                 },
+                colors: ['@111111', '#dd1111'],
+                plotOptions: {
+                                column: {
+                                    grouping: false,
+                                    shadow: false
+                                }
+                            },
                 title: {
                     text: null//'Frequency Analysis'
                 },
@@ -188,9 +202,11 @@ var ShiftCipher = {
                 },
                 series: [{
                     name: 'English',
-                    data: this.ENGLISH_FREQUENCIES
+                    data: this.ENGLISH_FREQUENCIES,
+                    pointPadding: 0
                 }, {
-                    name: 'Ciphertext'//,
+                    name: 'Ciphertext',
+                    pointPadding: 0.2
                     //data: this.shiftArray(paddedFreqs,shift)
                 }]
             });
@@ -198,8 +214,12 @@ var ShiftCipher = {
     },
     
     updatePlainText : function(){
-        this.plainText = this.decipher( this.cipherText, this.originalShift );
+        alert("don't call updatePlainText anymore");
+/*        if( this._plainTextCache[this.originalShift] == null ){
+            this.plainText = this.decipher( this.cipherText, this.originalShift );
+        }
         this.fireEvent( "plainTextChanged", this.plainText );
+*/        
     },
     
     updateChart : function(){
@@ -210,6 +230,7 @@ var ShiftCipher = {
      * Updates frequency data inside the given element.
      */
     updateFrequencies : function(){
+        alert("don't call updateFrequencies anymore");
         this.paddedFrequencies = this.frequenciesPaddedAlphabet( this.cipherText );
     },
     
@@ -270,12 +291,12 @@ function pageInit(){
     shiftCipher.addEvent(shiftEl,'input',shiftAmountChange,false);
     shiftCipher.addEvent(shiftEl,'onpropertychange',shiftAmountChange,false);
     
-    shiftCipher.addEventListener( "plainTextChanged", function(text){
-        outEl.innerHTML = "Plain: " + text;
+    shiftCipher.addEventListener( "plainTextChanged", function(src){
+        outEl.innerHTML = "Plain: " + src.plainText;
     });
-    shiftCipher.addEventListener( "originalShiftChanged", function(text){
-        shiftEl.value = text;
-        $( "#slider" ).slider({ value: text });
+    shiftCipher.addEventListener( "originalShiftChanged", function(src){
+        shiftEl.value = src.originalShift;
+        $( "#slider" ).slider({ value: src.originalShift });
     });
     shiftCipher.cipherText = inEl.innerHTML;
 }
@@ -327,7 +348,7 @@ tyx syx qc lerh erh xsyglih xli jegi sj Ksh.</textarea>
 
 Original Shift:
 <input type="text" id="shiftamount" value="2" />
-<div id="slider"  ></div>
+<div id="slider" style="width:200px;" ></div>
 
 Output:
 <textarea id="shiftoutput"></textarea>
