@@ -46,6 +46,7 @@ var ShiftCipher = {
                            0.01974, 0.00074],
 
     _freqChart : null,
+    _dotChart : null,
     _cipherText : "",
     _originalShift : 0,
     _paddedFrequencies : [],
@@ -257,6 +258,61 @@ var ShiftCipher = {
                     pointPadding: -0.3
                 }, {
                     name: 'Ciphertext',
+                    pointPadding: 0.1
+                }]
+            });
+        } 
+    },
+    
+    
+    
+    /**
+     * Sets up the frequency bar chart in the given HTML element.
+     */
+    initDotProductChart : function( containerID ){
+        
+        if( this._dotChart == null ){
+            
+            this._dotChart = new Highcharts.Chart({
+                chart: {
+                    renderTo: containerID,
+                    type: 'column'
+                },
+                colors: ['#777777', '#dd1111'],
+                plotOptions: {
+                                column: {
+                                    grouping: false,
+                                    shadow: false
+                                },
+                                dataLabels: { enabled: true },
+                            },
+                title: {
+                    text: null//'Frequency Analysis'
+                },
+                xAxis: {
+                    categories: this.ALPHABET_UPPER
+                },
+                yAxis: {
+                    title: {
+                        text: 'Dot Product'
+                    }
+                },
+                legend: {
+                    layout: 'vertical',
+                    backgroundColor: '#FFFFFF',
+                    align: 'right',
+                    verticalAlign: 'top',
+                    x: -5,
+                    y: 5,
+                    floating: true,
+                    shadow: true
+                },
+                series: [{
+                    name: 'TBD',
+                    //data: this.ENGLISH_FREQUENCIES,
+                    pointPadding: -0.3
+                }, {
+                    name: 'TBD',
                     pointPadding: 0.1
                 }]
             });
@@ -561,10 +617,9 @@ var VigenereCipher = {
 
 function pageInit(){
     
-    //pageInitShiftCipher();
+    pageInitShiftCipher();
     pageInitVigenereCipher();
-    
-    $( '#shiftCipherFieldset legend' ).siblings().slideToggle("slow");
+    //$( '#shiftCipherFieldset legend' ).siblings().slideToggle("slow");
     
     
     // Make all these fieldsets disappear when their legends are clicked
@@ -592,6 +647,7 @@ function pageInitShiftCipher(){
 
     // Init chart
     shiftCipher.initFrequencyChart('sc_freqChart');
+    shiftCipher.initDotProductChart('sc_dotChart');
     
     // Respond to changes in the Shift Cipher input box
     $('#sc_shift').on('input propertychange paste',function(){
@@ -623,8 +679,18 @@ function pageInitShiftCipher(){
 var vigenereCipher = Object.create( VigenereCipher );
 function pageInitVigenereCipher(){
     
-    vigenereCipher.initFrequencyChart('v_freqChart');
+    vigenereCipher.initFrequencyChart('v_freqChart_1');
     
+    // Slider control for shift amount
+    $( "#v_slider_1" ).slider({
+          value: 0,
+          min: 0,
+          max: 26,
+          step: 1,
+          slide: function( event, ui ) {
+            vigenereCipher.originalShift = ui.value ;
+          }
+        });
     
     // Respond to changes in the Shift Cipher input box
     $('#v_key').on('input propertychange paste',function(){
@@ -666,7 +732,8 @@ fieldset {
 
 <!-- Cipher Text -->
 <fieldset style="display: inline; width: 45%"><legend>Cipher Text</legend>
-    <!--Erh hergih xli womiw sr peyklxiv-wmpzivih amrkw; 
+    <!--
+    Erh hergih xli womiw sr peyklxiv-wmpzivih amrkw; 
     Wyraevh M'zi gpmqfih erh nsmrih xli xyqfpmrk qmvxl sj wyr-wtpmx gpsyhw - 
     erh hsri e lyrhvih xlmrkw Csy lezi rsx hvieqih sj - 
     aliipih erh wsevih erh wayrk lmkl mr xli wyrpmx wmpirgi. 
@@ -677,7 +744,8 @@ fieldset {
     alivi riziv pevo, sv izir iekpi, jpia; 
     erh, almpi amxl wmpirx, pmjxmrk qmrh M'zi xvsh 
     xli lmkl yrxviwtewwih wergxmxc sj wtegi, 
-    tyx syx qc lerh erh xsyglih xli jegi sj Ksh.-->    
+    tyx syx qc lerh erh xsyglih xli jegi sj Ksh.
+    -->    
 <textarea id="ciphertext" style="width:100%; " rows="8">
     Ri, M muyf wqcsqii nkf wzloz fthgt sk ydsxm, 
     Uqe hfhffh ybh tonyv pr quxhlyyu-tmqphsii qlokx; 
@@ -701,27 +769,54 @@ fieldset {
 </fieldset>
 
 <div id="log"></div>
+<style type="text/css">
+div.content table td  { text-align: center; }
+div.content table td div { margin: 1em; text-align: center}
+div.content { }
+div.shift {width: 100%; margin: 0 auto; }
+div.shift div.controls { display:inline-block; width: 18%; margin: 0 auto; text-align: center; position: relative; top: 50%; transform: translateY(-50%);}
+div.shift div.controls div { margin: 0.5em 0;}
+div.shift div.controls .slider {width:85%; margin: 0.5em auto }
+.chart { display:inline-block; width:37%; height:10em; border: solid #AAA 1px; padding: 0 15px 0px 0; margin: 5px auto; border-radius: 5px }
+</style>
 
 <!-- Shift Cipher -->
-<fieldset id="shiftCipherFieldset" style="width: 95%"><legend>Shift (Caesar) Cipher</legend>
-<div class="content">
-    Original Shift: 
-    <input type="text" id="sc_shift" style="width:4em" value="0" />
-    <div id="sc_slider" style="width:200px; display:inline-block; margin-left: 1em" >&nbsp;</div>
-    <input type="button" value="Auto Decipher" onclick="shiftCipher.solve();" />
-<div id="sc_freqChart" style="width:96%; height:10em; border: solid #AAA 1px; padding: 5px; margin: 5px; border-radius: 5px"></div>
+<fieldset id="shiftCipherFieldset" style="width: 95%; margin: 1em auto"><legend>Shift (Caesar) Cipher</legend>
+<div class="content"  >
+  <div class="shift">
+    <div class="controls" >
+        <div>Original Shift</div>
+        <input type="text" id="sc_shift" style="width:2em; text-align:center; font-size: larger" value="0" />
+        <div id="sc_slider" class="slider" >&nbsp;</div>
+        <input type="button" value="Guess" onclick="shiftCipher.solve();" />
+    </div>
+    <div id="sc_freqChart" class="freqChart chart" ></div>
+    <div id="sc_dotChart" class="dotChart chart" ></div>
+  </div>
 </div>
 </fieldset>
 
 <!-- Vigenere Square -->
 <fieldset id="vigenereFieldset" style="width: 95%"><legend>Vigenere Square Cipher</legend>
-<div class="content">
-    Key: 
-    <input type="text" id="v_key" style="width:10em" value="A" />
-    <div id="v_slider" style="width:200px; display:inline-block; margin-left: 1em" >&nbsp;</div>
-    <input type="button" value="Auto Decipher" onclick="vigenereCipher.solve();" />
-<div id="v_freqChart" style="width:96%; height:10em; border: solid #AAA 1px; padding: 5px; margin: 5px; border-radius: 5px"></div>
+<div class="content"  >
+    
+    <div>
+        Key: <input type="text" id="v_key" style="width:10em; margin-right: 2em" value="A" />
+        Key Length: <input type="text" id="v_keyLength" style="width:3em; margin-right: 2em" value="1" />
+        <input type="button" value="Guess Key Length" onclick="vigenereCipher.solve();" />
+    </div>
+    <div class="shift">
+        <div class="controls" >
+            <div>Key Character <span class="v_keyChar_1">1</span></div>
+            <input type="text" id="v_keyChar_1" style="width:2em; text-align:center; font-size: larger" value="A" />
+            <div id="v_slider_1" class="slider" >&nbsp;</div>
+        </div>
+        <div id="v_freqChart_1" class="freqChart chart" ></div>
+        <div id="v_dotChart_1" class="dotChart chart" ></div>
+    </div>
 </div>
+    
+    
 </fieldset>
 
 
