@@ -7,6 +7,7 @@
 <script src="js/libs/highcharts/highcharts.js"></script>
 <script src="js/libs/object-watch/object-watch.js"></script>
 
+
 <script language="javascript"><!--
 // Backup graph libraries to try:
 // http://raphaeljs.com
@@ -72,39 +73,65 @@ var ShiftCipher = {
     get cipherText() { return this._cipherText; },
     set cipherText ( text ){
         if( text === this._cipherText ) return;
-        this._cipherText = text;
-        this._plainTextCache = {}; // Clear cached deciphered contents
-        this.paddedFrequencies = this.frequenciesPaddedAlphabet( this.cipherText );
-        //this.updateFrequencies();
-        this.updateChart();
-        this.fireEvent( "cipherTextChanged", this );
-        this.fireEvent( "plainTextChanged", this );
+        var This = this;
+        $.Deferred(function(){
+            This._cipherText = text;
+            This._plainTextCache = {}; // Clear cached deciphered contents
+            This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText );
+            //this.updateFrequencies();
+            This.updateChart();
+            This.fireEvent( "cipherTextChanged", This );
+            This.fireEvent( "plainTextChanged", This );
+        
+            // Pre-cache the deciphered text
+            $.Deferred(function(){
+                for( var i = 0; i < 27; i++ ){
+                    This.getPlainText(i); // pre-cache
+                }
+            });
+        });
     },
     
     get originalShift() { return this._originalShift; },
     set originalShift ( shift ){
         if( shift === this._originalShift ) return;
-        this._originalShift = shift;
-        this.updateChart();
-        this.fireEvent( "originalShiftChanged", this );
-        this.fireEvent( "plainTextChanged", this );
+        var This = this;
+        $.Deferred(function(){
+            This._originalShift = shift;
+            This.updateChart();
+            This.fireEvent( "originalShiftChanged", This );
+            This.fireEvent( "plainTextChanged", This );
+        });
     },
     
     get plainText() {
-        if( this._plainTextCache[this.originalShift] == null ){
-            this._plainTextCache[this.originalShift] = 
-                this.decipher( this.cipherText, this.originalShift );
-        }
-        return this._plainTextCache[this.originalShift];
+        return this.getPlainText( this.originalShift );
     },
-    //set plainText( text ){ 
-    //    this._plainTextCache[this.originalShift] = text;
-    //},
+    getPlainText : function( origShift ){
+        if( this._plainTextCache[origShift] == null ){
+            this._plainTextCache[origShift] = 
+                this.decipher( this.cipherText, origShift );
+        }
+        return this._plainTextCache[origShift];
+    },
+    // No setter. Only use this._plainTextCache[..] internally
     
     get paddedFrequencies() { return this._paddedFrequencies; },
     set paddedFrequencies(pf) { this._paddedFrequencies = pf; },
     
     
+    // Automatically (try to) decipher
+    solve : function(){
+        var indexOfMax = 0;
+        var freq = this.paddedFrequencies;
+        for( var i = 0; i < freq.length; i++ ){
+            if( freq[i] > freq[indexOfMax] ){
+                indexOfMax = i;
+            }
+        }
+        // How far is max from the letter 'e'?
+        this.originalShift = (26 + indexOfMax - 4) % 26;
+    },
 
     /**
      * Shifts the given text, maintaining case and preserving
@@ -112,14 +139,16 @@ var ShiftCipher = {
      * with the text "cat" and a shift of 2 would return "ecv".
      */
     decipher : function ( text, origShift ){
+        origShift = origShift % 26;
         var output = '';
         var c;
-        for( var i = 0; i < text.length; i++ ){
+        var textLength = text.length;
+        for( var i = 0; i < textLength; i++ ){
             c = text.charCodeAt(i);
             if( c >= 65 && c <= 90 ){
                 output += String.fromCharCode( (c - 65 + 26-origShift ) % 26 + 65 );
             } else if( c >= 97 && c <= 122 ){
-                output += String.fromCharCode( (c - 97 + 26-origShift) %26 + 97 );
+                output += String.fromCharCode( (c - 97 + 26-origShift) % 26 + 97 );
             } else {
                 output += text.charAt(i);
             }
@@ -127,7 +156,10 @@ var ShiftCipher = {
         return output;
     },
     
-    
+    /**
+     * Takes an array (presumably of frequencies) and shifts
+     * the values in order to plot them appropriately.
+     */
     shiftArray : function ( input, origShift/*0..26*/ ){
         var output = [];
         for( var i = 0; i < input.length; i++ ){
@@ -152,6 +184,10 @@ var ShiftCipher = {
         return freqs;
     },
     
+    /**
+     * Returns a frequency array of length 26
+     * corresponding to each letter in the alphabet, A..Z
+     */
     frequenciesPaddedAlphabet : function( text ){
         var rawFreqs = this.frequenciesCountChars( text );
         var paddedFreqs = [];
@@ -174,20 +210,25 @@ var ShiftCipher = {
     },
     
     
-    initChart : function( container ){
+    /**
+     * Sets up the frequency bar chart in the given HTML element.
+     */
+    initFrequencyChart : function( containerID ){
         
         if( this._freqChart == null ){
+            
             this._freqChart = new Highcharts.Chart({
                 chart: {
-                    renderTo: 'container',
+                    renderTo: containerID,
                     type: 'column'
                 },
-                colors: ['@111111', '#dd1111'],
+                colors: ['#777777', '#dd1111'],
                 plotOptions: {
                                 column: {
                                     grouping: false,
                                     shadow: false
-                                }
+                                },
+                                dataLabels: { enabled: true },
                             },
                 title: {
                     text: null//'Frequency Analysis'
@@ -200,42 +241,34 @@ var ShiftCipher = {
                         text: 'Frequency'
                     }
                 },
+                legend: {
+                    layout: 'vertical',
+                    backgroundColor: '#FFFFFF',
+                    align: 'right',
+                    verticalAlign: 'top',
+                    x: -5,
+                    y: 5,
+                    floating: true,
+                    shadow: true
+                },
                 series: [{
                     name: 'English',
                     data: this.ENGLISH_FREQUENCIES,
-                    pointPadding: 0
+                    pointPadding: -0.3
                 }, {
                     name: 'Ciphertext',
-                    pointPadding: 0.2
-                    //data: this.shiftArray(paddedFreqs,shift)
+                    pointPadding: 0.1
                 }]
             });
         } 
     },
     
-    updatePlainText : function(){
-        alert("don't call updatePlainText anymore");
-/*        if( this._plainTextCache[this.originalShift] == null ){
-            this.plainText = this.decipher( this.cipherText, this.originalShift );
-        }
-        this.fireEvent( "plainTextChanged", this.plainText );
-*/        
-    },
     
     updateChart : function(){
         this._freqChart.series[1].setData(this.shiftArray(this.paddedFrequencies,this.originalShift));
     },
     
-    /**
-     * Updates frequency data inside the given element.
-     */
-    updateFrequencies : function(){
-        alert("don't call updateFrequencies anymore");
-        this.paddedFrequencies = this.frequenciesPaddedAlphabet( this.cipherText );
-    },
-    
-
-    addEvent : function( target, eventName, func, capture ){
+/*    addEvent : function( target, eventName, func, capture ){
         if( target.addEventListener ){
             target.addEventListener( eventName, func, capture );
             return true;
@@ -253,63 +286,302 @@ var ShiftCipher = {
         else if( target.detachEvent )
             return target.detachEvent( 'on'+eventName, func );
     },   // end removeEvent
-    
+    */
 
+    
 };  // end ShiftCipher
 
-function shiftInputChange(){
-    var inEl = document.getElementById('shiftinput');
-    var outEl = document.getElementById('shiftoutput');
-    var shiftEl = document.getElementById('shiftamount');
-    var freqEl = document.getElementById('freqout');
-    
-    shiftCipher.cipherText = inEl.value ;
-}
 
-function shiftAmountChange(){
-    var shiftEl = document.getElementById('shiftamount');
+
+/* ********  V I G E N E R E   C I P H E R  ******** */
+
+
+var VigenereCipher = {
     
-    shiftCipher.originalShift = parseInt(shiftEl.value) ;
+    ALPHABET_LOWER : ['a','b','c','d','e','f','g','h','i','j','k','l','m',
+                          'n','o','p','q','r','s','t','u','v','w','x','y','z'],
     
-//    outEl.value = ShiftCipher.shiftText(inEl.value,parseInt(shiftEl.value));
-//    shiftCipher.updateFrequencies( outEl.value, parseInt(shiftEl.value) );
+    ALPHABET_UPPER : ['A','B','C','D','E','F','G','H','I','J','K','L','M',
+                          'N','O','P','Q','R','S','T','U','V','W','X','Y','Z'],
+                          
+//    ALPHABET_INDEX : {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7, 'H':8,
+//                      'I':9, 'J':10, 'K':11, 'L':12, 'M':13, 'N':14, 'O':15,
+//                      'P':16, 'Q':17, 'R':18, 'S':19, 'T':20, 'U':21, 'V':22,
+//                      'W':23, 'X':24, 'Y':25, 'Z':26},
+//
+    // http://www.cryptograms.org/letter-frequencies.php
+    ENGLISH_FREQUENCIES : [0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228,
+                           0.02015, 0.06094, 0.06966, 0.00153, 0.00772, 0.04025,
+                           0.02406, 0.06749, 0.07507, 0.01929, 0.00095, 0.05987,
+                           0.06327, 0.09056, 0.02758, 0.00978, 0.02360, 0.00150,
+                           0.01974, 0.00074],
+
+    _freqChart : null,
+    _cipherText : "",
+    _key : "A",
+//    _originalShift : 0,
+//    _paddedFrequencies : [],
+//    _plainText : "",
+    _plainTextCache : {},
+    _listeners : {},
+    _ignoreNonAlpha : true,
     
     
-}
+    addEventListener : function( eventType, callback ){
+        if( this._listeners[eventType] == null ){
+            this._listeners[eventType] = [callback];
+        } else {
+            this._listeners[eventType].push(callback);
+        }
+    },
+    
+    fireEvent : function( eventType, arg ){
+        if( this._listeners[eventType] != null ){
+            this._listeners[eventType].map(function(callback){
+                callback(arg);
+            });
+        }
+    },
+    
+    get cipherText() { return this._cipherText; },
+    set cipherText ( text ){
+        if( text === this._cipherText ) return;
+        this._cipherText = text;
+        this._plainTextCache = {}; // Clear cached deciphered contents
+        var This = this;
+        $.Deferred(function(){
+            This.updateChart();
+            This.fireEvent( "cipherTextChanged", This );
+            This.fireEvent( "plainTextChanged", This );
+        });
+    },
+    
+    get key() { return this._key; },
+    set key( key ){
+        if( key === this._key ) return;
+        var preppedKey = '';
+        for( var i = 0 ; i < key.length; i++ ){
+            var c = key.charCodeAt( i );
+            if( c >= 65 && c <= 90 ){
+                preppedKey += String.fromCharCode( c );
+            } else if( c >= 97 && c <= 122 ){
+                preppedKey += String.fromCharCode( c-32 ); // Make uppercase
+            } else {
+                // Skip character
+            }
+        }
+        this._key = preppedKey;
+        var This = this;
+        $.Deferred(function(){
+            //This.updateChart();
+            This.fireEvent( "keyChanged", This );
+            This.fireEvent( "plainTextChanged", This );
+        });
+    },
+
+    
+    get plainText() {
+        return this.getPlainText( this.key );
+    },
+    getPlainText : function( key ){
+        if( this._plainTextCache[key] == null ){
+            this._plainTextCache[key] = 
+                this.decipher( this.cipherText, key );
+        }
+        return this._plainTextCache[key];
+    },
+    // No setter. Only use this._plainTextCache[..] internally
+    
+    get paddedFrequencies() { return this._paddedFrequencies; },
+    set paddedFrequencies(pf) { this._paddedFrequencies = pf; },
+    
+    
+    // Automatically (try to) decipher
+    solve : function(){
+        // Vigenere solve, not yet implemented
+    },
+
+    /**
+     * Vigenere decipher
+     */
+    decipher : function ( text, key ){
+        var output = '';
+        var c;
+        var len = text.length;
+        
+        // Prep the shifts for the key
+        var origShift = [];
+        var keyLength = key.length;
+        for( var i = 0; i < keyLength; i++ ){
+            origShift[i] = key.charCodeAt(i) - 64;
+        }
+
+        var pos = 0;
+        for( var i = 0; i < len; i++ ){
+            c = text.charCodeAt(i);
+            if( i < 3 ){
+            }
+            if( c >= 65 && c <= 90 ){
+                output += String.fromCharCode( (c - 65 + 26-origShift[pos%keyLength] ) % 26 + 65 );
+                pos++;
+            } else if( c >= 97 && c <= 122 ){
+                output += String.fromCharCode( (c - 97 + 26-origShift[pos%keyLength]) % 26 + 97 );
+                pos++
+            } else {    
+                    output += text.charAt(i);
+                if( !this._ignoreNonAlpha ){
+                    pos++;
+                } 
+            }
+        }
+        return output;
+    },
+    
+    /**
+     * Takes an array (presumably of frequencies) and shifts
+     * the values in order to plot them appropriately.
+     */
+    shiftArray : function ( input, origShift/*0..26*/ ){
+        var output = [];
+        for( var i = 0; i < input.length; i++ ){
+            output[i] = input[ (i+origShift) % input.length ];
+        }
+        return output;
+    },
+    
+    
+    /**
+     * Returns the frequencies of characters in the text.
+     * The returned value is a dictionary with every character
+     * in the source text as a key (even punctuation, etc).
+     */
+    frequenciesCountChars : function( text ){
+        var freqs = {};
+        var c;
+        for( var i = 0; i < text.length; i++ ){
+            c = text.charAt(i);
+            freqs[c] = freqs[c] ? freqs[c] + 1 : 1;
+        }
+        return freqs;
+    },
+    
+    /**
+     * Returns a frequency array of length 26
+     * corresponding to each letter in the alphabet, A..Z
+     */
+    frequenciesPaddedAlphabet : function( text ){
+        var rawFreqs = this.frequenciesCountChars( text );
+        var paddedFreqs = [];
+        var totalChars = 0;
+        for( var i = 0; i < this.ALPHABET_UPPER.length; i++ ){
+            var count = 0;
+            if( !isNaN( rawFreqs[this.ALPHABET_LOWER[i]] ) ){
+                count += rawFreqs[this.ALPHABET_LOWER[i]]
+            }
+            if( !isNaN( rawFreqs[this.ALPHABET_UPPER[i]] ) ){
+                count += rawFreqs[this.ALPHABET_UPPER[i]]
+            }
+            paddedFreqs[ i ] = count;
+            totalChars += count;
+        }
+        for( var i = 0; i < paddedFreqs.length; i++ ){
+            paddedFreqs[i] = 1.0 * paddedFreqs[i] / totalChars;
+        }
+        return paddedFreqs;
+    },
+    
+    
+    /**
+     * Sets up the frequency bar chart in the given HTML element.
+     */
+    initFrequencyChart : function( containerID ){
+        
+        if( this._freqChart == null ){
+            
+            this._freqChart = new Highcharts.Chart({
+                chart: {
+                    renderTo: containerID,
+                    type: 'column'
+                },
+                colors: ['#777777', '#dd1111'],
+                plotOptions: {
+                                column: {
+                                    grouping: false,
+                                    shadow: false
+                                },
+                                dataLabels: { enabled: true },
+                            },
+                title: {
+                    text: null//'Frequency Analysis'
+                },
+                xAxis: {
+                    categories: this.ALPHABET_UPPER
+                },
+                yAxis: {
+                    title: {
+                        text: 'Frequency'
+                    }
+                },
+                legend: {
+                    layout: 'vertical',
+                    backgroundColor: '#FFFFFF',
+                    align: 'right',
+                    verticalAlign: 'top',
+                    x: -5,
+                    y: 5,
+                    floating: true,
+                    shadow: true
+                },
+                series: [{
+                    name: 'English',
+                    data: this.ENGLISH_FREQUENCIES,
+                    pointPadding: -0.3
+                }, {
+                    name: 'Ciphertext',
+                    pointPadding: 0.1
+                }]
+            });
+        } 
+    },
+    
+    
+    updateChart : function(){
+        //this._freqChart.series[1].setData(this.shiftArray(this.paddedFrequencies,this.originalShift));
+    },
+    
+    
+};  // end VigenereCipher
+
+
+
+
+
+/* ********  L O C A L   F U N C T I O N S  ******** */
+
 
 function pageInit(){
-    var inEl = document.getElementById('shiftinput');
-    var outEl = document.getElementById('shiftoutput');
-    var shiftEl = document.getElementById('shiftamount');
     
-    shiftCipher.initChart('container');
-    shiftCipher.shift = parseInt(shiftEl.value) ;
+    //pageInitShiftCipher();
+    pageInitVigenereCipher();
     
-    shiftCipher.addEvent(inEl,'input',shiftInputChange,false);
-    shiftCipher.addEvent(inEl,'onpropertychange',shiftInputChange,false);
+    $( '#shiftCipherFieldset legend' ).siblings().slideToggle("slow");
     
-    shiftCipher.addEvent(shiftEl,'input',shiftAmountChange,false);
-    shiftCipher.addEvent(shiftEl,'onpropertychange',shiftAmountChange,false);
     
-    shiftCipher.addEventListener( "plainTextChanged", function(src){
-        outEl.innerHTML = "Plain: " + src.plainText;
+    // Make all these fieldsets disappear when their legends are clicked
+    $(function(){
+      $('legend').on('click',function(){
+       $(this).siblings().slideToggle("slow");
+      });
     });
-    shiftCipher.addEventListener( "originalShiftChanged", function(src){
-        shiftEl.value = src.originalShift;
-        $( "#slider" ).slider({ value: src.originalShift });
-    });
-    shiftCipher.cipherText = inEl.innerHTML;
-}
+}   // end pageInit
+
 
 var shiftCipher = Object.create( ShiftCipher );
-//ShiftCipher.addEvent(window,'load',pageInit,false);
-$( document ).ready(function() {
-    pageInit();
-    //$( "#slider" ).slider();
-});
-$(function() {
-    $( "#slider" ).slider({
-          value:4,
+function pageInitShiftCipher(){
+    
+    // Slider control for shift amount
+    $( "#sc_slider" ).slider({
+          value: 0,
           min: 0,
           max: 26,
           step: 1,
@@ -317,44 +589,142 @@ $(function() {
             shiftCipher.originalShift = ui.value ;
           }
         });
-});
 
-/*
-shiftCipher.watch("shift",function(prop,oldVal,newVal){
-    var el = document.getElementById('el');
-    el.innerHTML =  "Prop=" + prop + ", oldVal=" + oldVal + ", newVal=" + newVal + "<br>val=" + shiftCipher.shift;
+    // Init chart
+    shiftCipher.initFrequencyChart('sc_freqChart');
+    
+    // Respond to changes in the Shift Cipher input box
+    $('#sc_shift').on('input propertychange paste',function(){
+        shiftCipher.originalShift = parseInt( $(this).val() ) || 0;
+    });
+    
+    // Respond to changes to the ciphertext
+    $('#ciphertext').on('input propertychange paste',function(){
+        shiftCipher.cipherText = $(this).val();
+    });
+    
+    // Glue ShiftCipher to controls
+    shiftCipher.addEventListener( "plainTextChanged", function(src){
+        $( '#plaintext' )[0].innerHTML = src.plainText;
+        $( "#outputLegend" )[0].innerHTML = "Plain Text: Shift Cipher (shift=" + src.originalShift + ")";
+    });
+    shiftCipher.addEventListener( "originalShiftChanged", function(src){
+        $( '#sc_shift' ).val( src.originalShift );
+        $( "#sc_slider" ).slider({ value: src.originalShift });
+    });
+    
+    // Set up initial cipher text
+    shiftCipher.cipherText = $('#ciphertext').text();
+    shiftCipher.originalShift = parseInt( $('#sc_shift').val() ) || 0;
+    
+}   // end pageInitShiftCipher
+
+
+var vigenereCipher = Object.create( VigenereCipher );
+function pageInitVigenereCipher(){
+    
+    vigenereCipher.initFrequencyChart('v_freqChart');
+    
+    
+    // Respond to changes in the Shift Cipher input box
+    $('#v_key').on('input propertychange paste',function(){
+        vigenereCipher.key = $(this).val();
+    });
+    
+    //Glue ShiftCipher to controls
+    vigenereCipher.addEventListener( "plainTextChanged", function(src){
+        $( '#plaintext' )[0].innerHTML = src.plainText;
+        $( "#outputLegend" )[0].innerHTML = "Plain Text: Vigenere Square Cipher (key=" + src.key + ")";
+    });
+    vigenereCipher.addEventListener( "keyChanged", function(src){
+        $( '#v_key' ).val( src.key );
+    });
+    
+    
+    vigenereCipher.key = $('#v_key').val();
+    vigenereCipher.cipherText = $('#ciphertext').text();
+}
+
+
+// Init on page load
+$( document ).ready(function() {
+    pageInit();
 });
-*/
 
 // --></script>
+
+<style type="text/css">
+fieldset {
+    margin-top: 1em;
+    border-radius: 5px;
+}
+</style>
+
 </head>
 <body>
     <div id="el"></div>
-<h1>Shift Cipher</h1>
-Input:
-<textarea id="shiftinput">Sl, M lezi wpmttih xli wyvpc fsrhw sj ievxl, 
-Erh hergih xli womiw sr peyklxiv-wmpzivih amrkw; 
-Wyraevh M'zi gpmqfih erh nsmrih xli xyqfpmrk qmvxl sj wyr-wtpmx gpsyhw - 
-erh hsri e lyrhvih xlmrkw Csy lezi rsx hvieqih sj - 
-aliipih erh wsevih erh wayrk lmkl mr xli wyrpmx wmpirgi. 
-Lszivmrk xlivi M'zi glewih xli wlsyxmrk amrh epsrk 
-erh jpyrk qc iekiv gvejx xlvsykl jssxpiww leppw sj emv.
-"Yt, yt xli psrk hipmvmsyw fyvrmrk fpyi 
-M'zi xsttih xli amrh-waitx limklxw amxl iewc kvegi, 
-alivi riziv pevo, sv izir iekpi, jpia; 
-erh, almpi amxl wmpirx, pmjxmrk qmrh M'zi xvsh 
-xli lmkl yrxviwtewwih wergxmxc sj wtegi, 
-tyx syx qc lerh erh xsyglih xli jegi sj Ksh.</textarea>
 
-Original Shift:
-<input type="text" id="shiftamount" value="2" />
-<div id="slider" style="width:200px;" ></div>
+<!-- Cipher Text -->
+<fieldset style="display: inline; width: 45%"><legend>Cipher Text</legend>
+    <!--Erh hergih xli womiw sr peyklxiv-wmpzivih amrkw; 
+    Wyraevh M'zi gpmqfih erh nsmrih xli xyqfpmrk qmvxl sj wyr-wtpmx gpsyhw - 
+    erh hsri e lyrhvih xlmrkw Csy lezi rsx hvieqih sj - 
+    aliipih erh wsevih erh wayrk lmkl mr xli wyrpmx wmpirgi. 
+    Lszivmrk xlivi M'zi glewih xli wlsyxmrk amrh epsrk 
+    erh jpyrk qc iekiv gvejx xlvsykl jssxpiww leppw sj emv.
+    "Yt, yt xli psrk hipmvmsyw fyvrmrk fpyi 
+    M'zi xsttih xli amrh-waitx limklxw amxl iewc kvegi, 
+    alivi riziv pevo, sv izir iekpi, jpia; 
+    erh, almpi amxl wmpirx, pmjxmrk qmrh M'zi xvsh 
+    xli lmkl yrxviwtewwih wergxmxc sj wtegi, 
+    tyx syx qc lerh erh xsyglih xli jegi sj Ksh.-->    
+<textarea id="ciphertext" style="width:100%; " rows="8">
+    Ri, M muyf wqcsqii nkf wzloz fthgt sk ydsxm, 
+    Uqe hfhffh ybh tonyv pr quxhlyyu-tmqphsii qlokx; 
+    Mxoaflg J'zj wojqgyg bri drjrjx wii yopcpnhj nmwnk pj xoq-ttqcw dptogt - 
+    esx gprj u kvrilhe xmcqhw Dix ieay qpx ilhbqjx rg - 
+    amyhmii uqe wtuufh fhg tazhj imlb lo xmy vvrqcw tmqyqdi. 
+    Miyfvnhj uljlh J'zj wkbwjx wii xbrvxnhj xmsx dmssa 
+    doh kfxok rs hbkjl fsekn wivtoji jtiwmixm kbpqm rg enl.
+    "Xq, yu nkf pthj eiqcujszm evvscqh fqoh 
+    J'zj nrqtjx wii bcqe-wbysu ljcjixx qlul juvz kwuff, 
+    amyuf rjphs pfln, pv jpho ifaof, jqyz; 
+    bri, qkjpj qlul xcofry, flgxnhj nmsx L'wi ylre 
+    xmy kjkm oquvjmsbwxyg teswwjxd ii ttfwh, 
+    qyy ixu qd bdoh fhg uszwkfh ybh gehy rg Ktx.
+</textarea>
+</fieldset>
 
-Output:
-<textarea id="shiftoutput"></textarea>
+<!-- Plain Text-->
+<fieldset style="display: inline; width: 45%"><legend id="outputLegend">Plain Text</legend>
+<textarea id="plaintext" style="width:100%; " rows="8"></textarea>
+</fieldset>
 
-<div id="freqout">freqs</div>
-<div id="container" style="width:100%; height:15em;"></div>
+<div id="log"></div>
+
+<!-- Shift Cipher -->
+<fieldset id="shiftCipherFieldset" style="width: 95%"><legend>Shift (Caesar) Cipher</legend>
+<div class="content">
+    Original Shift: 
+    <input type="text" id="sc_shift" style="width:4em" value="0" />
+    <div id="sc_slider" style="width:200px; display:inline-block; margin-left: 1em" >&nbsp;</div>
+    <input type="button" value="Auto Decipher" onclick="shiftCipher.solve();" />
+<div id="sc_freqChart" style="width:96%; height:10em; border: solid #AAA 1px; padding: 5px; margin: 5px; border-radius: 5px"></div>
+</div>
+</fieldset>
+
+<!-- Vigenere Square -->
+<fieldset id="vigenereFieldset" style="width: 95%"><legend>Vigenere Square Cipher</legend>
+<div class="content">
+    Key: 
+    <input type="text" id="v_key" style="width:10em" value="A" />
+    <div id="v_slider" style="width:200px; display:inline-block; margin-left: 1em" >&nbsp;</div>
+    <input type="button" value="Auto Decipher" onclick="vigenereCipher.solve();" />
+<div id="v_freqChart" style="width:96%; height:10em; border: solid #AAA 1px; padding: 5px; margin: 5px; border-radius: 5px"></div>
+</div>
+</fieldset>
+
+
 
 </body>
 </html>
