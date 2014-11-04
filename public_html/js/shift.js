@@ -25,8 +25,103 @@ var ShiftCipher = {
     _originalShift : 0, // 0=A
     _paddedFrequencies : [],
     _plainText : "",
+    _step : 1,
+    _stepStart : 0,
     _plainTextCache : {},
     _listeners : {},
+    
+    
+    /**
+     * Initializes a shift cipher HTML element, loading
+     * the controls, charts, etc and interconnecting them.
+     * 
+     * @param {type} domID
+     * @returns {undefined}
+     */
+    init : function( domID ){
+  /*<div class="shift">
+    <div class="controls" >
+        <div>Original Shift</div>
+        <input type="text" id="sc_shiftAlpha" style="width:2em; text-align:center; font-size: larger" value="A" />
+        <input type="text" id="sc_shiftNum" style="width:2em; text-align:center; font-size: larger" value="0" />
+        <div id="sc_slider" class="slider" >&nbsp;</div>
+        <input type="button" value="Guess" onclick="shiftCipher.guess();" />
+    </div>
+    <div id="sc_freqChart" class="freqChart chart" ></div>
+    <div id="sc_dotChart" class="dotChart chart" ></div>
+  </div> */        
+        var container = document.getElementById( domID );
+            var shiftDiv = document.createElement('div');
+                var controlsDiv = document.createElement('div');
+                var freqDiv = document.createElement('div');
+                var dotDiv  = document.createElement('div');
+        container.appendChild(shiftDiv);
+            shiftDiv.appendChild(controlsDiv);
+            shiftDiv.appendChild(freqDiv);
+            shiftDiv.appendChild(dotDiv);
+            
+        // Out shift div
+        shiftDiv.setAttribute('class', 'shift');
+        
+        // Controls
+        controlsDiv.setAttribute('class', 'controls');
+        var controlsTitle   = document.createElement('div');
+        var shiftAlphaInput = document.createElement('input');
+        var shiftNumInput   = document.createElement('input');
+        var sliderDiv       = document.createElement('div');
+        controlsDiv.appendChild( controlsTitle );
+        controlsDiv.appendChild( shiftAlphaInput );
+        controlsDiv.appendChild( shiftNumInput );
+        controlsDiv.appendChild( sliderDiv );
+            
+            controlsTitle.innerHTML = "Original Shift";
+        
+            shiftAlphaInput.setAttribute('type', 'text');
+            shiftAlphaInput.setAttribute('class', 'shiftAlpha');
+            
+            shiftNumInput.setAttribute('type', 'text');
+            shiftNumInput.setAttribute('class', 'shiftNum');
+            
+            sliderDiv.setAttribute('class', 'slider');
+            var sliderId = 'shiftSlider_' + this.generateUUID();
+            sliderDiv.setAttribute('id', sliderId);
+            $( '#' + sliderId ).slider({
+                value: 0,
+                min: 0,
+                max: 25,
+                step: 1,
+                slide: function( event, ui ) {
+                  this.originalShift = ui.value ;
+                }
+              });
+        
+        
+        // Frequency chart
+        var freqId = 'freqChart_' + this.generateUUID();
+        freqDiv.setAttribute('id', freqId );
+        freqDiv.setAttribute('class', 'freqChart chart');
+        this.initFrequencyChart( freqId );
+        
+        // Dot product chart
+        var dotId = 'dotChart_' + this.generateUUID();
+        dotDiv.setAttribute('id', dotId );
+        dotDiv.setAttribute('class', 'dotChart chart');
+        this.initDotProductChart( dotId );
+        
+        
+        
+    },
+    
+    generateUUID : function(){
+        var d = new Date().getTime();
+        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = (d + Math.random()*16)%16 | 0;
+            d = Math.floor(d/16);
+            return (c=='x' ? r : (r&0x7|0x8)).toString(16);
+        });
+        return uuid;
+    },
+    
     
     
     addEventListener : function( eventType, callback ){
@@ -67,6 +162,48 @@ var ShiftCipher = {
         });
     },
     
+    get stepStart() { return this._stepStart; },
+    set stepStart( start ){
+        if( start === this._stepStart ) return;
+        $.Deferred(function(){
+            This._stepStart = stepStart;
+            This._plainTextCache = {}; // Clear cached deciphered contents
+            This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText, This.stepStart, This.step );
+            This.updateFrequencyChart();
+            This.updateDotProductChart();
+            This.fireEvent( "stepStartChanged", This );
+            This.fireEvent( "plainTextChanged", This );
+        
+            // Pre-cache the deciphered text
+            $.Deferred(function(){
+                for( var i = 0; i < 26; i++ ){
+                    This.getPlainText(i); // pre-cache
+                }
+            });
+        });
+    },
+    
+    get step() { return this._step; },
+    set step( step ){
+        if( step === this._step ) return;
+        $.Deferred(function(){
+            This._step = step;
+            This._plainTextCache = {}; // Clear cached deciphered contents
+            This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText, This.stepStart, This.step );
+            This.updateFrequencyChart();
+            This.updateDotProductChart();
+            This.fireEvent( "stepChanged", This );
+            This.fireEvent( "plainTextChanged", This );
+        
+            // Pre-cache the deciphered text
+            $.Deferred(function(){
+                for( var i = 0; i < 26; i++ ){
+                    This.getPlainText(i); // pre-cache
+                }
+            });
+        });
+    },
+    
     get originalShift() { return this._originalShift; },
     set originalShift ( shift ){
         if( shift === this._originalShift ) return;
@@ -86,7 +223,7 @@ var ShiftCipher = {
     getPlainText : function( origShift ){
         if( this._plainTextCache[origShift] == null ){
             this._plainTextCache[origShift] = 
-                this.decipher( this.cipherText, origShift );
+                this.decipher( this.cipherText, origShift, this.stepStart, this.step );
         }
         return this._plainTextCache[origShift];
     },
@@ -114,17 +251,28 @@ var ShiftCipher = {
      * non-latin characters (non a-z).  For example a call
      * with the text "cat" and a shift of 2 would return "ecv".
      */
-    decipher : function ( text, origShift ){
+    decipher : function ( text, origShift, start, step ){
         origShift = origShift % 26;
         var output = '';
         var c;
         var textLength = text.length;
+        var alphaPos = 0;
         for( var i = 0; i < textLength; i++ ){
             c = text.charCodeAt(i);
-            if( c >= 65 && c <= 90 ){
-                output += String.fromCharCode( (c - 65 + 26-origShift ) % 26 + 65 );
-            } else if( c >= 97 && c <= 122 ){
-                output += String.fromCharCode( (c - 97 + 26-origShift) % 26 + 97 );
+            if( c >= 65 && c <= 90 ){ // UPPER
+                if( (alphaPos-start) % step === 0 ){
+                    output += String.fromCharCode( (c - 65 + 26-origShift ) % 26 + 65 );
+                } else {
+                    output += text.charAt(i);
+                }
+                alphaPos++;
+            } else if( c >= 97 && c <= 122 ){ // lower
+                if( (alphaPos-start) % step === 0 ){
+                    output += String.fromCharCode( (c - 97 + 26-origShift) % 26 + 97 );
+                } else {
+                    output += text.charAt(i);
+                }
+                alphaPos++;
             } else {
                 output += text.charAt(i);
             }

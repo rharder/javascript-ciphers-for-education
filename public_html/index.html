@@ -41,8 +41,10 @@ tyx syx qc lerh erh xsyglih xli jegi sj Ksh.
 function pageInit(){
     
     pageInitShiftCipher();
+    pageJsInitShiftCipher();
     pageInitVigenereCipher();
-    //$( '#shiftCipherFieldset legend' ).siblings().slideToggle("slow");
+    
+    //$( '#vigenereFieldset legend' ).siblings().slideToggle("slow");
     
     
     // Make all these fieldsets disappear when their legends are clicked
@@ -55,8 +57,29 @@ function pageInit(){
 
 
 var shiftCipher = Object.create( ShiftCipher );
-function pageInitShiftCipher(){
+var shiftCipherJs = Object.create( ShiftCipher );
+function pageJsInitShiftCipher(){
+    shiftCipherJs.init( 'shiftJsInitContent' );
     
+    // Respond to changes to the ciphertext
+    $('#ciphertext').on('input propertychange paste',function(){
+        shiftCipherJs.cipherText = $(this).val();
+    });
+    
+    // Glue ShiftCipher to controls
+    shiftCipherJs.addEventListener( "plainTextChanged", function(src){
+        $( '#plaintext' )[0].innerHTML = src.plainText;
+        $( "#outputLegend" )[0].innerHTML = "Plain Text: Shift Cipher JS (shift=" + src.originalShift + ")";
+    });
+    
+    // Set up initial cipher text
+    shiftCipherJs.cipherText = $('#ciphertext').text();
+  
+}   // end pageInitShiftCipher
+
+
+function pageInitShiftCipher(){
+  
     // Slider control for shift amount
     $( "#sc_slider" ).slider({
           value: 0,
@@ -243,8 +266,14 @@ div.shift {width: 100%; margin: 0 auto; }
 div.shift div.controls { display:inline-block; width: 18%; margin: 0 auto; text-align: center; position: relative; top: 50%; transform: translateY(-50%);}
 div.shift div.controls div { margin: 0.5em 0;}
 div.shift div.controls .slider {width:85%; margin: 0.5em auto }
-.chart { display:inline-block; width:37%; height:10em; border: solid #AAA 1px; padding: 0 15px 0px 0; margin: 5px auto; border-radius: 5px }
+.chart { display:inline-block; width:37%; height:10em; border: solid #AAA 1px; padding: 0 15px 0px 0; margin: 5px ; border-radius: 5px }
+.shiftAlpha, .shiftNum {width:2em; text-align:center; font-size: larger; margin: 2px}
 </style>
+
+<fieldset id="shiftJsInitField" style="width: 95%; margin: 1em auto">
+<legend>Shift (Caesar) Cipher (JS Init)</legend>
+<div id="shiftJsInitContent"  ></div>
+</fieldset>
 
 <!-- Shift Cipher -->
 <fieldset id="shiftCipherFieldset" style="width: 95%; margin: 1em auto"><legend>Shift (Caesar) Cipher</legend>
