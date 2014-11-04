@@ -15,11 +15,14 @@ var ShiftCipher = {
                            0.02406, 0.06749, 0.07507, 0.01929, 0.00095, 0.05987,
                            0.06327, 0.09056, 0.02758, 0.00978, 0.02360, 0.00150,
                            0.01974, 0.00074],
+    ARRAY_ONE : [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ARRAY_ZEROES : [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+
 
     _freqChart : null,
     _dotChart : null,
     _cipherText : "",
-    _originalShift : 0,
+    _originalShift : 0, // 0=A
     _paddedFrequencies : [],
     _plainText : "",
     _plainTextCache : {},
@@ -50,14 +53,14 @@ var ShiftCipher = {
             This._cipherText = text;
             This._plainTextCache = {}; // Clear cached deciphered contents
             This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText );
-            //this.updateFrequencies();
-            This.updateChart();
+            This.updateFrequencyChart();
+            This.updateDotProductChart();
             This.fireEvent( "cipherTextChanged", This );
             This.fireEvent( "plainTextChanged", This );
         
             // Pre-cache the deciphered text
             $.Deferred(function(){
-                for( var i = 0; i < 27; i++ ){
+                for( var i = 0; i < 26; i++ ){
                     This.getPlainText(i); // pre-cache
                 }
             });
@@ -70,7 +73,8 @@ var ShiftCipher = {
         var This = this;
         $.Deferred(function(){
             This._originalShift = shift;
-            This.updateChart();
+            This.updateFrequencyChart();
+            This.updateDotProductChart('shift');
             This.fireEvent( "originalShiftChanged", This );
             This.fireEvent( "plainTextChanged", This );
         });
@@ -93,16 +97,16 @@ var ShiftCipher = {
     
     
     // Automatically (try to) decipher
-    solve : function(){
+    guess : function(){
         var indexOfMax = 0;
-        var freq = this.paddedFrequencies;
-        for( var i = 0; i < freq.length; i++ ){
-            if( freq[i] > freq[indexOfMax] ){
+        var dots = this.dotProductCoincidence;
+        for( var i = 0; i < dots.length; i++ ){
+            if( dots[i] > dots[indexOfMax] ){
                 indexOfMax = i;
             }
         }
         // How far is max from the letter 'e'?
-        this.originalShift = (26 + indexOfMax - 4) % 26;
+        this.originalShift = indexOfMax;//(26 + indexOfMax - 4) % 26;
     },
 
     /**
@@ -181,6 +185,26 @@ var ShiftCipher = {
         return paddedFreqs;
     },
     
+    dotProduct : function( u, v ){
+        var len = Math.min( u.length, v.length );
+        var sum = 0;
+        for( var i = 0; i < len; i++ ){
+            sum += u[i] * v[i];
+        }
+        return sum;
+    },
+    
+    get dotProductCoincidence(){
+        var u = this.paddedFrequencies;
+        var v = this.ENGLISH_FREQUENCIES;
+        var len = Math.min( u.length, v.length );
+        var dots = [];
+        for( var i = 0; i < len; i++ ){
+            dots[i] = this.dotProduct( u, this.shiftArray(v,25-i) );
+        }
+        return this.shiftArray(dots,25); // I'm off by one and have to shift.
+    },
+    
     
     /**
      * Sets up the frequency bar chart in the given HTML element.
@@ -209,9 +233,8 @@ var ShiftCipher = {
                     categories: this.ALPHABET_UPPER
                 },
                 yAxis: {
-                    title: {
-                        text: 'Frequency'
-                    }
+                    title: { text: 'Frequency' },
+                    labels: {enabled: false}
                 },
                 legend: {
                     layout: 'vertical',
@@ -256,6 +279,7 @@ var ShiftCipher = {
                                     shadow: false
                                 },
                                 dataLabels: { enabled: true },
+                                series: { marker: { enabled: false } }
                             },
                 title: {
                     text: null//'Frequency Analysis'
@@ -264,9 +288,8 @@ var ShiftCipher = {
                     categories: this.ALPHABET_UPPER
                 },
                 yAxis: {
-                    title: {
-                        text: 'Dot Product'
-                    }
+                    title: {text: 'Dot Product'},
+                    labels: {enabled: false}
                 },
                 legend: {
                     layout: 'vertical',
@@ -278,12 +301,17 @@ var ShiftCipher = {
                     floating: true,
                     shadow: true
                 },
+                tooltip: {
+                    shared: true
+                },
                 series: [{
-                    name: 'TBD',
+                    name: 'Dot Product',
+                    type: 'line',
                     //data: this.ENGLISH_FREQUENCIES,
                     pointPadding: -0.3
                 }, {
-                    name: 'TBD',
+                    name: 'Shift',
+                    type: 'column',
                     pointPadding: 0.1
                 }]
             });
@@ -291,30 +319,32 @@ var ShiftCipher = {
     },
     
     
-    updateChart : function(){
-        this._freqChart.series[1].setData(this.shiftArray(this.paddedFrequencies,this.originalShift));
+    updateFrequencyChart : function(){
+        var shiftedFreqs = this.shiftArray(this.paddedFrequencies,this.originalShift);
+        this._freqChart.series[1].setData(shiftedFreqs);
+        
+        //var one = this.shiftArray( this.ARRAY_ONE, this.originalShift );
+        //var dot = this.dotProduct( shiftedFreqs, one, 'first' );
+        //this._dotChart.series[1].setData( dot );
+        //this._dotChart.series[1].setData(shiftedFreqs);
     },
     
-/*    addEvent : function( target, eventName, func, capture ){
-        if( target.addEventListener ){
-            target.addEventListener( eventName, func, capture );
-            return true;
-        }   // end if: addEventListener
-        else if( target.attachEvent )
-            return target.attachEvent( 'on'+eventName, func );
-    },  // end addEvent
-
-
-    removeEvent : function( target, eventName, func, capture ){
-        if( target.removeEventListener ){
-            target.removeEventListener( eventName, func, capture );
-            return true;
-        }   // end if: removeEventListener
-        else if( target.detachEvent )
-            return target.detachEvent( 'on'+eventName, func );
-    },   // end removeEvent
-    */
-
+    updateDotProductChart : function(toUpdate){
+        //var dot = this.dotProduct( this.paddedFrequencies, this.ENGLISH_FREQUENCIES, 'both' );
+        var dots = this.dotProductCoincidence;
+        if( toUpdate == null || toUpdate === 'freq' ){
+            this._dotChart.series[0].setData( dots );
+        }
+        if( toUpdate == null || toUpdate === 'shift' ){
+            var shiftMarker = [];
+            for( var i = 0; i < 26; i++ ){
+                shiftMarker[i] = 0;
+            }
+            shiftMarker[ this.originalShift ] = dots[ this.originalShift ];
+            this._dotChart.series[1].setData( shiftMarker );
+        }
+    }
+    
     
 };  // end ShiftCipher
 
