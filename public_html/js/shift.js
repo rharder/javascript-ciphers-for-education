@@ -50,6 +50,7 @@ var ShiftCipher = {
     <div id="sc_freqChart" class="freqChart chart" ></div>
     <div id="sc_dotChart" class="dotChart chart" ></div>
   </div> */        
+        var This = this;
         var container = document.getElementById( domID );
             var shiftDiv = document.createElement('div');
                 var controlsDiv = document.createElement('div');
@@ -76,24 +77,47 @@ var ShiftCipher = {
             
             controlsTitle.innerHTML = "Original Shift";
         
+            var shiftAlphaId = 'shiftAlpha_' + this.generateUUID();
             shiftAlphaInput.setAttribute('type', 'text');
             shiftAlphaInput.setAttribute('class', 'shiftAlpha');
-            
+            shiftAlphaInput.setAttribute('id', shiftAlphaId);
+            $(shiftAlphaInput).on('input propertychange paste',function(){
+                var c = $(this).val().charCodeAt(0);
+                if( c >= 65 && c <= 90 ){
+                    This.originalShift = c - 65;
+                } else if( c >= 97 && c <= 122 ){
+                    This.originalShift = c - 97;
+                } else {
+                    This.originalShift = 0;
+                }
+            });
+
+            var shiftNumId = 'shiftNum_' + this.generateUUID();
             shiftNumInput.setAttribute('type', 'text');
             shiftNumInput.setAttribute('class', 'shiftNum');
+            shiftNumInput.setAttribute('id', shiftNumId);
+            $(shiftNumInput).on('input propertychange paste',function(){
+                var s = parseInt( $(this).val() );
+                This.originalShift = isNaN(s) ? 0 : Math.abs(s % 26);
+            });
             
             sliderDiv.setAttribute('class', 'slider');
             var sliderId = 'shiftSlider_' + this.generateUUID();
             sliderDiv.setAttribute('id', sliderId);
-            $( '#' + sliderId ).slider({
-                value: 0,
-                min: 0,
-                max: 25,
-                step: 1,
+            $( sliderDiv ).slider({
+                value: 0, min: 0, max: 25, step: 1,
                 slide: function( event, ui ) {
-                  this.originalShift = ui.value ;
+                  This.originalShift = ui.value ;
                 }
               });
+              
+              
+            this.addEventListener('originalShiftChanged',function(src){
+                shiftAlphaInput.setAttribute('value', String.fromCharCode( src.originalShift+65 ) ); 
+                shiftNumInput.setAttribute('value', src.originalShift );
+                $( sliderDiv ).slider({ value: src.originalShift });    
+            });
+            
         
         
         // Frequency chart
@@ -469,7 +493,9 @@ var ShiftCipher = {
     
     updateFrequencyChart : function(){
         var shiftedFreqs = this.shiftArray(this.paddedFrequencies,this.originalShift);
-        this._freqChart.series[1].setData(shiftedFreqs);
+        if( this._freqChart != null ){
+            this._freqChart.series[1].setData(shiftedFreqs);
+        }
         
         //var one = this.shiftArray( this.ARRAY_ONE, this.originalShift );
         //var dot = this.dotProduct( shiftedFreqs, one, 'first' );
@@ -489,7 +515,9 @@ var ShiftCipher = {
                 shiftMarker[i] = 0;
             }
             shiftMarker[ this.originalShift ] = dots[ this.originalShift ];
-            this._dotChart.series[1].setData( shiftMarker );
+            if( this._dotChart != null ){
+                this._dotChart.series[1].setData( shiftMarker );
+            }
         }
     }
     
