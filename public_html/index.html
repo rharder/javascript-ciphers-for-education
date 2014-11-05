@@ -42,6 +42,7 @@ function pageInit(){
     
     pageInitShiftCipher();
     pageJsInitShiftCipher();
+    pageJsInitShiftCipher2();
     pageInitVigenereCipher();
     
     //$( '#vigenereFieldset legend' ).siblings().slideToggle("slow");
@@ -58,6 +59,7 @@ function pageInit(){
 
 var shiftCipher = Object.create( ShiftCipher );
 var shiftCipherJs = Object.create( ShiftCipher );
+var shiftCipherJs2 = Object.create( ShiftCipher );
 
 function pageJsInitShiftCipher(){
     shiftCipherJs.init( 'shiftJsInitContent' );
@@ -75,6 +77,25 @@ function pageJsInitShiftCipher(){
     
     // Set up initial cipher text
     shiftCipherJs.cipherText = $('#ciphertext').text();
+  
+}   // end pageInitShiftCipher
+
+function pageJsInitShiftCipher2(){
+    shiftCipherJs2.init( 'shiftJsInitContent2' );
+    
+    // Respond to changes to the ciphertext
+    $('#ciphertext').on('input propertychange paste',function(){
+        shiftCipherJs2.cipherText = $(this).val();
+    });
+    
+    // Glue ShiftCipher to controls
+    shiftCipherJs2.addEventListener( "plainTextChanged", function(src){
+        $( '#plaintext' )[0].innerHTML = src.plainText;
+        $( "#outputLegend" )[0].innerHTML = "Plain Text: Shift Cipher JS2 (shift=" + src.originalShift + ")";
+    });
+    
+    // Set up initial cipher text
+    shiftCipherJs2.cipherText = $('#ciphertext').text();
   
 }   // end pageInitShiftCipher
 
@@ -274,6 +295,11 @@ div.shift div.controls .slider {width:85%; margin: 0.5em auto }
 <fieldset id="shiftJsInitField" style="width: 95%; margin: 1em auto">
 <legend>Shift (Caesar) Cipher (JS Init)</legend>
 <div id="shiftJsInitContent"  ></div>
+</fieldset>
+
+<fieldset id="shiftJsInitField" style="width: 95%; margin: 1em auto">
+<legend>Shift (Caesar) Cipher (JS Init, 2)</legend>
+<div id="shiftJsInitContent2"  ></div>
 </fieldset>
 
 <!-- Shift Cipher -->

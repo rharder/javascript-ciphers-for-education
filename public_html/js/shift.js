@@ -101,21 +101,24 @@ var ShiftCipher = {
                 This.originalShift = isNaN(s) ? 0 : Math.abs(s % 26);
             });
             
-            sliderDiv.setAttribute('class', 'slider');
             var sliderId = 'shiftSlider_' + this.generateUUID();
+            sliderDiv.setAttribute('class', 'slider');
             sliderDiv.setAttribute('id', sliderId);
             $( sliderDiv ).slider({
                 value: 0, min: 0, max: 25, step: 1,
                 slide: function( event, ui ) {
-                  This.originalShift = ui.value ;
+                  //This.originalShift = ui.value ;
                 }
               });
               
               
             this.addEventListener('originalShiftChanged',function(src){
-                shiftAlphaInput.setAttribute('value', String.fromCharCode( src.originalShift+65 ) ); 
-                shiftNumInput.setAttribute('value', src.originalShift );
-                $( sliderDiv ).slider({ value: src.originalShift });    
+                $.Deferred(function(){
+                    var shift = src.originalShift;
+                    shiftAlphaInput.setAttribute('value', String.fromCharCode( shift+65 ) ); 
+                    shiftNumInput.setAttribute('value', ':'+shift );
+                    $( sliderDiv ).slider({ value: shift });    
+                });
             });
             
         
@@ -138,7 +141,7 @@ var ShiftCipher = {
     
     generateUUID : function(){
         var d = new Date().getTime();
-        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var uuid = 'xxxxxxxx_xxxx_4xxx_yxxx_xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             var r = (d + Math.random()*16)%16 | 0;
             d = Math.floor(d/16);
             return (c=='x' ? r : (r&0x7|0x8)).toString(16);
