@@ -23,12 +23,12 @@ var ShiftCipher = {
     _dotChart : null,
     _cipherText : "",
     _originalShift : 0, // 0=A
-    _paddedFrequencies : [],
+    _paddedFrequencies : null,
     _plainText : "",
     _step : 1,
     _stepStart : 0,
-    _plainTextCache : {},
-    _listeners : {},
+    _plainTextCache : null,
+    _listeners : null,
     
     
     /**
@@ -81,7 +81,7 @@ var ShiftCipher = {
             shiftAlphaInput.setAttribute('type', 'text');
             shiftAlphaInput.setAttribute('class', 'shiftAlpha');
             shiftAlphaInput.setAttribute('id', shiftAlphaId);
-/*            $(shiftAlphaInput).on('input propertychange paste',function(){
+            $(shiftAlphaInput).on('input propertychange paste',function(){
                 var c = $(this).val().charCodeAt(0);
                 if( c >= 65 && c <= 90 ){
                     This.originalShift = c - 65;
@@ -91,16 +91,16 @@ var ShiftCipher = {
                     This.originalShift = 0;
                 }
             });
-*/
+
             var shiftNumId = 'shiftNum_' + this.generateUUID();
             shiftNumInput.setAttribute('type', 'text');
             shiftNumInput.setAttribute('class', 'shiftNum');
             shiftNumInput.setAttribute('id', shiftNumId);
-/*            $(shiftNumInput).on('input propertychange paste',function(){
+            $(shiftNumInput).on('input propertychange paste',function(){
                 var s = parseInt( $(this).val() );
                 This.originalShift = isNaN(s) ? 0 : Math.abs(s % 26);
             });
-*/            
+            
             var sliderId = 'shiftSlider_' + this.generateUUID();
             sliderDiv.setAttribute('class', 'slider');
             sliderDiv.setAttribute('id', sliderId);
@@ -113,12 +113,12 @@ var ShiftCipher = {
               
 
             this.addEventListener('originalShiftChanged',function(src){
-                //$.Deferred(function(){
+                $.Deferred(function(){
                     var shift = src.originalShift;
                     shiftAlphaInput.setAttribute('value', String.fromCharCode( shift+65 ) ); 
-                    shiftNumInput.setAttribute('value', ':'+shift );
+                    shiftNumInput.setAttribute('value', shift );
                     $( sliderDiv ).slider({ value: shift });    
-                //});
+                });
             });
 
         
@@ -152,6 +152,9 @@ var ShiftCipher = {
     
     
     addEventListener : function( eventType, callback ){
+        if( this._listeners == null ){
+            this._listeners = {};
+        }
         if( this._listeners[eventType] == null ){
             this._listeners[eventType] = [callback];
         } else {
@@ -235,19 +238,22 @@ var ShiftCipher = {
     set originalShift ( shift ){
         if( shift === this._originalShift ) return;
         var This = this;
-        $.Deferred(function(){
+        //$.Deferred(function(){
             This._originalShift = shift;
             This.updateFrequencyChart();
             This.updateDotProductChart('shift');
             This.fireEvent( "originalShiftChanged", This );
             This.fireEvent( "plainTextChanged", This );
-        });
+        //});
     },
     
     get plainText() {
         return this.getPlainText( this.originalShift );
     },
     getPlainText : function( origShift ){
+        if( this._plainTextCache == null ){
+            this._plainTextCache = {};
+        }
         if( this._plainTextCache[origShift] == null ){
             this._plainTextCache[origShift] = 
                 this.decipher( this.cipherText, origShift, this.stepStart, this.step );

@@ -33,7 +33,76 @@ xli lmkl yrxviwtewwih wergxmxc sj wtegi,
 tyx syx qc lerh erh xsyglih xli jegi sj Ksh.
  */
 
+/*
+var Animal = {
+  type: {},//"Invertebrates", // Default value of properties
+  displayType : function(){  // Method which will display type of Animal
+    console.log(this.type['f']);
+  }
+}
 
+var Animal2 = {
+  _listeners : {}, // Default value of properties
+  type : {},
+  displayType : function(){  // Method which will display type of Animal
+      console.log( this._listeners['f']);
+      for( f in this._listeners['f']){
+        //console.log(f);
+    }
+  },
+  setType : function(t){
+      this._listeners['f'] = t;
+      if( this._listeners['f'] == null ){
+            this._listeners['f'] = [t];
+        } else {
+            this._listeners['f'].push(t);
+        }
+  }
+}
+var animal1 = Object.create(Animal); 
+//animal1.setType( 'animal');
+//animal1.type = {};
+animal1.type['f'] = 'animal';
+var fish = Object.create(Animal);
+//fish.type = {};
+fish.type['f'] = 'fish';
+//fish.setType( 'fishes');
+animal1.displayType(); // Output:Invertebrates
+fish.displayType(); // Output:Fishes
+
+
+
+var Foo = {
+    _listeners : {},
+    
+    
+    addEventListener : function( eventType, callback ){
+        if( this._listeners[eventType] == null ){
+            this._listeners[eventType] = [callback];
+        } else {
+            this._listeners[eventType].push(callback);
+        }
+    },
+    
+    fireEvent : function( eventType, arg ){
+        if( this._listeners[eventType] != null ){
+            this._listeners[eventType].map(function(callback){
+                callback(arg);
+            });
+        }
+    }
+    
+};
+
+var a = Object.create(Foo);
+var b = Object.create(Foo);
+a.addEventListener("event1",function(){alert('a1');});
+a.addEventListener("event2",function(){alert('a2');});
+b.addEventListener("event1",function(){alert('b1');});
+b.addEventListener("event2",function(){alert('b2');});
+
+//a.fireEvent("event1");
+*/
 
 /* ********  L O C A L   F U N C T I O N S  ******** */
 
@@ -47,7 +116,6 @@ function pageInit(){
     
     //$( '#vigenereFieldset legend' ).siblings().slideToggle("slow");
     
-    shiftCipher.originalShift = 7;
     
     // Make all these fieldsets disappear when their legends are clicked
     $(function(){
