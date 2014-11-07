@@ -42,11 +42,12 @@ function pageInit(){
     
     pageInitShiftCipher();
     pageJsInitShiftCipher();
-    pageJsInitShiftCipher2();
+    //pageJsInitShiftCipher2();
     pageInitVigenereCipher();
     
     //$( '#vigenereFieldset legend' ).siblings().slideToggle("slow");
     
+    shiftCipher.originalShift = 7;
     
     // Make all these fieldsets disappear when their legends are clicked
     $(function(){
@@ -57,8 +58,8 @@ function pageInit(){
 }   // end pageInit
 
 
-var shiftCipher = Object.create( ShiftCipher );
-var shiftCipherJs = Object.create( ShiftCipher );
+var shiftCipher    = Object.create( ShiftCipher );
+var shiftCipherJs  = Object.create( ShiftCipher );
 var shiftCipherJs2 = Object.create( ShiftCipher );
 
 function pageJsInitShiftCipher(){

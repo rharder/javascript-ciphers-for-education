@@ -81,7 +81,7 @@ var ShiftCipher = {
             shiftAlphaInput.setAttribute('type', 'text');
             shiftAlphaInput.setAttribute('class', 'shiftAlpha');
             shiftAlphaInput.setAttribute('id', shiftAlphaId);
-            $(shiftAlphaInput).on('input propertychange paste',function(){
+/*            $(shiftAlphaInput).on('input propertychange paste',function(){
                 var c = $(this).val().charCodeAt(0);
                 if( c >= 65 && c <= 90 ){
                     This.originalShift = c - 65;
@@ -91,36 +91,36 @@ var ShiftCipher = {
                     This.originalShift = 0;
                 }
             });
-
+*/
             var shiftNumId = 'shiftNum_' + this.generateUUID();
             shiftNumInput.setAttribute('type', 'text');
             shiftNumInput.setAttribute('class', 'shiftNum');
             shiftNumInput.setAttribute('id', shiftNumId);
-            $(shiftNumInput).on('input propertychange paste',function(){
+/*            $(shiftNumInput).on('input propertychange paste',function(){
                 var s = parseInt( $(this).val() );
                 This.originalShift = isNaN(s) ? 0 : Math.abs(s % 26);
             });
-            
+*/            
             var sliderId = 'shiftSlider_' + this.generateUUID();
             sliderDiv.setAttribute('class', 'slider');
             sliderDiv.setAttribute('id', sliderId);
             $( sliderDiv ).slider({
                 value: 0, min: 0, max: 25, step: 1,
                 slide: function( event, ui ) {
-                  //This.originalShift = ui.value ;
+                    This.originalShift = ui.value ;
                 }
               });
               
-              
+
             this.addEventListener('originalShiftChanged',function(src){
-                $.Deferred(function(){
+                //$.Deferred(function(){
                     var shift = src.originalShift;
                     shiftAlphaInput.setAttribute('value', String.fromCharCode( shift+65 ) ); 
                     shiftNumInput.setAttribute('value', ':'+shift );
                     $( sliderDiv ).slider({ value: shift });    
-                });
+                //});
             });
-            
+
         
         
         // Frequency chart
