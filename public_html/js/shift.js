@@ -30,6 +30,17 @@ var ShiftCipher = {
     _plainTextCache : null,
     _listeners : null,
     
+    // HTML elements
+    _container : null,
+    _shiftDiv : null,
+    _controlsDiv : null,
+        _controlsTitleDiv : null,
+        _shiftAlphaInput : null,
+        _shiftNumInput : null,
+        _slideDiv : null,
+        _guessBtn : null,
+    _freqDiv : null,
+    _dotDiv : null,
     
     /**
      * Initializes a shift cipher HTML element, loading
@@ -51,73 +62,85 @@ var ShiftCipher = {
     <div id="sc_dotChart" class="dotChart chart" ></div>
   </div> */        
         var This = this;
-        var container = document.getElementById( domID );
-            var shiftDiv = document.createElement('div');
-                var controlsDiv = document.createElement('div');
-                var freqDiv = document.createElement('div');
-                var dotDiv  = document.createElement('div');
-        container.appendChild(shiftDiv);
-            shiftDiv.appendChild(controlsDiv);
-            shiftDiv.appendChild(freqDiv);
-            shiftDiv.appendChild(dotDiv);
+        This._container = document.getElementById( domID );
+            This._shiftDiv = document.createElement('div');
+                This._controlsDiv = document.createElement('div');
+                This._freqDiv = document.createElement('div');
+                This._dotDiv  = document.createElement('div');
+        This._container.appendChild(This._shiftDiv);
+            This._shiftDiv.appendChild(This._controlsDiv);
+            This._shiftDiv.appendChild(This._freqDiv);
+            This._shiftDiv.appendChild(This._dotDiv);
             
         // Out shift div
-        shiftDiv.setAttribute('class', 'shift');
+        This._shiftDiv.setAttribute('class', 'shift');
         
         // Controls
-        controlsDiv.setAttribute('class', 'controls');
-        var controlsTitle   = document.createElement('div');
-        var shiftAlphaInput = document.createElement('input');
-        var shiftNumInput   = document.createElement('input');
-        var sliderDiv       = document.createElement('div');
-        controlsDiv.appendChild( controlsTitle );
-        controlsDiv.appendChild( shiftAlphaInput );
-        controlsDiv.appendChild( shiftNumInput );
-        controlsDiv.appendChild( sliderDiv );
+        This._controlsDiv.setAttribute('class', 'controls');
+        This._controlsTitleDiv= document.createElement('div');
+        This._shiftAlphaInput = document.createElement('input');
+        This._shiftNumInput   = document.createElement('input');
+        This._sliderDiv       = document.createElement('div');
+        This._guessBtn        = document.createElement('input');
+        This._controlsDiv.appendChild( This._controlsTitleDiv );
+        This._controlsDiv.appendChild( This._shiftAlphaInput );
+        This._controlsDiv.appendChild( This._shiftNumInput );
+        This._controlsDiv.appendChild( This._sliderDiv );
+        This._controlsDiv.appendChild( This._guessBtn );
             
-            controlsTitle.innerHTML = "Original Shift";
+            This._controlsTitleDiv.innerHTML = "Original Shift";
         
             var shiftAlphaId = 'shiftAlpha_' + this.generateUUID();
-            shiftAlphaInput.setAttribute('type', 'text');
-            shiftAlphaInput.setAttribute('class', 'shiftAlpha');
-            shiftAlphaInput.setAttribute('id', shiftAlphaId);
-            $(shiftAlphaInput).on('input propertychange paste',function(){
+            This._shiftAlphaInput.setAttribute('type', 'text');
+            This._shiftAlphaInput.setAttribute('class', 'shiftAlpha');
+            This._shiftAlphaInput.setAttribute('id', shiftAlphaId);
+            $(This._shiftAlphaInput).on('input propertychange paste',function(){
                 var c = $(this).val().charCodeAt(0);
                 if( c >= 65 && c <= 90 ){
                     This.originalShift = c - 65;
                 } else if( c >= 97 && c <= 122 ){
                     This.originalShift = c - 97;
                 } else {
-                    This.originalShift = 0;
+                    This.originalShift = 0;0
                 }
             });
+            This._shiftAlphaInput.setAttribute('value', String.fromCharCode( This.originalShift+65 ) );
+            
 
             var shiftNumId = 'shiftNum_' + this.generateUUID();
-            shiftNumInput.setAttribute('type', 'text');
-            shiftNumInput.setAttribute('class', 'shiftNum');
-            shiftNumInput.setAttribute('id', shiftNumId);
-            $(shiftNumInput).on('input propertychange paste',function(){
+            This._shiftNumInput.setAttribute('type', 'text');
+            This._shiftNumInput.setAttribute('class', 'shiftNum');
+            This._shiftNumInput.setAttribute('id', shiftNumId);
+            $(This._shiftNumInput).on('input propertychange paste',function(){
                 var s = parseInt( $(this).val() );
                 This.originalShift = isNaN(s) ? 0 : Math.abs(s % 26);
             });
+            This._shiftNumInput.setAttribute('value', This.originalShift );
             
             var sliderId = 'shiftSlider_' + this.generateUUID();
-            sliderDiv.setAttribute('class', 'slider');
-            sliderDiv.setAttribute('id', sliderId);
-            $( sliderDiv ).slider({
+            This._sliderDiv.setAttribute('class', 'slider');
+            This._sliderDiv.setAttribute('id', sliderId);
+            $( This._sliderDiv ).slider({
                 value: 0, min: 0, max: 25, step: 1,
                 slide: function( event, ui ) {
                     This.originalShift = ui.value ;
                 }
               });
               
+              var guessId = 'guess_' + this.generateUUID();
+              This._guessBtn.setAttribute('type', 'button');
+              This._guessBtn.setAttribute('value', 'Guess');
+              $( This._guessBtn ).on('click',function(){
+                  This.guess();
+              });
+              
 
             this.addEventListener('originalShiftChanged',function(src){
                 $.Deferred(function(){
                     var shift = src.originalShift;
-                    shiftAlphaInput.setAttribute('value', String.fromCharCode( shift+65 ) ); 
-                    shiftNumInput.setAttribute('value', shift );
-                    $( sliderDiv ).slider({ value: shift });    
+                    This._shiftAlphaInput.setAttribute('value', String.fromCharCode( shift+65 ) ); 
+                    This._shiftNumInput.setAttribute('value', shift );
+                    $( This._sliderDiv ).slider({ value: shift });    
                 });
             });
 
@@ -125,19 +148,34 @@ var ShiftCipher = {
         
         // Frequency chart
         var freqId = 'freqChart_' + this.generateUUID();
-        freqDiv.setAttribute('id', freqId );
-        freqDiv.setAttribute('class', 'freqChart chart');
+        This._freqDiv.setAttribute('id', freqId );
+        This._freqDiv.setAttribute('class', 'freqChart chart');
         this.initFrequencyChart( freqId );
         
         // Dot product chart
         var dotId = 'dotChart_' + this.generateUUID();
-        dotDiv.setAttribute('id', dotId );
-        dotDiv.setAttribute('class', 'dotChart chart');
+        This._dotDiv.setAttribute('id', dotId );
+        This._dotDiv.setAttribute('class', 'dotChart chart');
         this.initDotProductChart( dotId );
         
         
-        
+    },  // end init
+    
+    
+    
+    get controlsTitle(){
+        return this._controlsTitleDiv == null ? null : this._controlsTitleDiv.innerHTML;
     },
+    set controlsTitle( innerHTML ){
+        if( this._controlsTitleDiv != null ){
+            this._controlsTitleDiv.innerHTML = innerHTML;
+        }
+    },
+    
+    
+    
+    
+    
     
     generateUUID : function(){
         var d = new Date().getTime();
@@ -163,7 +201,7 @@ var ShiftCipher = {
     },
     
     fireEvent : function( eventType, arg ){
-        if( this._listeners[eventType] != null ){
+        if( this._listeners != null && this._listeners[eventType] != null ){
             this._listeners[eventType].map(function(callback){
                 callback(arg);
             });
@@ -172,7 +210,7 @@ var ShiftCipher = {
     
     get cipherText() { return this._cipherText; },
     set cipherText ( text ){
-        if( text === this._cipherText ) return;
+        //if( text === this._cipherText ) return;
         var This = this;
         $.Deferred(function(){
             This._cipherText = text;
@@ -194,7 +232,7 @@ var ShiftCipher = {
     
     get stepStart() { return this._stepStart; },
     set stepStart( start ){
-        if( start === this._stepStart ) return;
+        //if( start === this._stepStart ) return;
         $.Deferred(function(){
             This._stepStart = stepStart;
             This._plainTextCache = {}; // Clear cached deciphered contents
@@ -215,7 +253,7 @@ var ShiftCipher = {
     
     get step() { return this._step; },
     set step( step ){
-        if( step === this._step ) return;
+        //if( step === this._step ) return;
         $.Deferred(function(){
             This._step = step;
             This._plainTextCache = {}; // Clear cached deciphered contents
@@ -236,15 +274,15 @@ var ShiftCipher = {
     
     get originalShift() { return this._originalShift; },
     set originalShift ( shift ){
-        if( shift === this._originalShift ) return;
+        //if( shift === this._originalShift ) return;
         var This = this;
-        //$.Deferred(function(){
+        $.Deferred(function(){
             This._originalShift = shift;
             This.updateFrequencyChart();
             This.updateDotProductChart('shift');
             This.fireEvent( "originalShiftChanged", This );
             This.fireEvent( "plainTextChanged", This );
-        //});
+        });
     },
     
     get plainText() {
@@ -262,7 +300,7 @@ var ShiftCipher = {
     },
     // No setter. Only use this._plainTextCache[..] internally
     
-    get paddedFrequencies() { return this._paddedFrequencies; },
+    get paddedFrequencies() { return this._paddedFrequencies == null ? [] : this._paddedFrequencies; },
     set paddedFrequencies(pf) { this._paddedFrequencies = pf; },
     
     
@@ -503,7 +541,7 @@ var ShiftCipher = {
     updateFrequencyChart : function(){
         var shiftedFreqs = this.shiftArray(this.paddedFrequencies,this.originalShift);
         if( this._freqChart != null ){
-            this._freqChart.series[1].setData(shiftedFreqs);
+            this._freqChart.series[1].setData(shiftedFreqs == null ? [] : shiftedFreqs);
         }
         
         //var one = this.shiftArray( this.ARRAY_ONE, this.originalShift );
@@ -525,7 +563,7 @@ var ShiftCipher = {
             }
             shiftMarker[ this.originalShift ] = dots[ this.originalShift ];
             if( this._dotChart != null ){
-                this._dotChart.series[1].setData( shiftMarker );
+                this._dotChart.series[1].setData( shiftMarker == null ? [] : shiftMarker );
             }
         }
     }
