@@ -233,8 +233,9 @@ var ShiftCipher = {
     get stepStart() { return this._stepStart; },
     set stepStart( start ){
         //if( start === this._stepStart ) return;
+        var This = this;
         $.Deferred(function(){
-            This._stepStart = stepStart;
+            This._stepStart = start;
             This._plainTextCache = {}; // Clear cached deciphered contents
             This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText, This.stepStart, This.step );
             This.updateFrequencyChart();
@@ -254,6 +255,7 @@ var ShiftCipher = {
     get step() { return this._step; },
     set step( step ){
         //if( step === this._step ) return;
+        var This = this;
         $.Deferred(function(){
             This._step = step;
             This._plainTextCache = {}; // Clear cached deciphered contents
@@ -322,7 +324,7 @@ var ShiftCipher = {
      * non-latin characters (non a-z).  For example a call
      * with the text "cat" and a shift of 2 would return "ecv".
      */
-    decipher : function ( text, origShift, start, step ){
+    decipher : function ( text, origShift, start, step, optionalInterleaveSource ){
         origShift = origShift % 26;
         var output = '';
         var c;
@@ -334,21 +336,46 @@ var ShiftCipher = {
                 if( (alphaPos-start) % step === 0 ){
                     output += String.fromCharCode( (c - 65 + 26-origShift ) % 26 + 65 );
                 } else {
-                    output += text.charAt(i);
+                    output += optionalInterleaveSource == null ? text.charAt(i) : optionalInterleaveSource.charAt(i);
                 }
                 alphaPos++;
             } else if( c >= 97 && c <= 122 ){ // lower
                 if( (alphaPos-start) % step === 0 ){
                     output += String.fromCharCode( (c - 97 + 26-origShift) % 26 + 97 );
                 } else {
-                    output += text.charAt(i);
+                    output += optionalInterleaveSource == null ? text.charAt(i) : optionalInterleaveSource.charAt(i);
                 }
                 alphaPos++;
             } else {
-                output += text.charAt(i);
+                output += optionalInterleaveSource == null ? text.charAt(i) : optionalInterleaveSource.charAt(i);
             }
         }
         return output;
+    },
+    
+    
+    /**
+     * Returns the frequencies of characters in the text.
+     * The returned value is a dictionary with every character
+     * in the source text as a key (even punctuation, etc).
+     */
+    frequenciesCountChars : function( text, start, step ){
+        var freqs = {};
+        var textLength = text.length;
+        var alphaPos = 0;
+        var c;
+        var cChar;
+        for( var i = 0; i < textLength; i++ ){
+            c = text.charCodeAt(i);
+            if( (c >= 65 && c <= 90) || (c >= 97 && c <= 122) ){ // alpha
+                if( (alphaPos-start) % step === 0 ){
+                    cChar = text.charAt(i);
+                    freqs[cChar] = freqs[cChar] ? freqs[cChar] + 1 : 1;
+                }
+                alphaPos++;
+            }
+        }
+        return freqs;
     },
     
     /**
@@ -364,27 +391,13 @@ var ShiftCipher = {
     },
     
     
-    /**
-     * Returns the frequencies of characters in the text.
-     * The returned value is a dictionary with every character
-     * in the source text as a key (even punctuation, etc).
-     */
-    frequenciesCountChars : function( text ){
-        var freqs = {};
-        var c;
-        for( var i = 0; i < text.length; i++ ){
-            c = text.charAt(i);
-            freqs[c] = freqs[c] ? freqs[c] + 1 : 1;
-        }
-        return freqs;
-    },
     
     /**
      * Returns a frequency array of length 26
      * corresponding to each letter in the alphabet, A..Z
      */
     frequenciesPaddedAlphabet : function( text ){
-        var rawFreqs = this.frequenciesCountChars( text );
+        var rawFreqs = this.frequenciesCountChars( text, this.stepStart, this.step );
         var paddedFreqs = [];
         var totalChars = 0;
         for( var i = 0; i < this.ALPHABET_UPPER.length; i++ ){
@@ -554,7 +567,7 @@ var ShiftCipher = {
         //var dot = this.dotProduct( this.paddedFrequencies, this.ENGLISH_FREQUENCIES, 'both' );
         var dots = this.dotProductCoincidence;
         if( toUpdate == null || toUpdate === 'freq' ){
-            this._dotChart.series[0].setData( dots );
+            this._dotChart.series[0].setData( dots == null ? [] : dots );
         }
         if( toUpdate == null || toUpdate === 'shift' ){
             var shiftMarker = [];

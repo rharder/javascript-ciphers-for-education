@@ -113,9 +113,9 @@ function pageInit(){
     pageJsInitShiftCipher( shiftCipherJs, 'shiftJsInitContent');
     //pageJsInitShiftCipher( shiftCipherJs2, 'shiftJsInitContent2');
     //pageJsInitShiftCipher2();
-    //pageInitVigenereCipher();
+    pageInitVigenereCipher(vigenereCipher, 'vigenereContent');
     
-    //$( '#vigenereFieldset legend' ).siblings().slideToggle("slow");
+    $( '#shiftJsInitField legend' ).siblings().slideToggle("slow");
     
     
     // Make all these fieldsets disappear when their legends are clicked
@@ -150,97 +150,24 @@ function pageJsInitShiftCipher( cipher, elId){
   
 }   // end pageInitShiftCipher
 
-/*
-function pageInitShiftCipher(){
-  
-    // Slider control for shift amount
-    $( "#sc_slider" ).slider({
-          value: 0,
-          min: 0,
-          max: 25,
-          step: 1,
-          slide: function( event, ui ) {
-            shiftCipher.originalShift = ui.value ;
-          }
-        });
-
-    // Init chart
-    shiftCipher.initFrequencyChart('sc_freqChart');
-    shiftCipher.initDotProductChart('sc_dotChart');
-    
-    // Respond to changes in the Shift Cipher input box
-    $('#sc_shiftNum').on('input propertychange paste',function(){
-        var s = parseInt( $(this).val() );
-        shiftCipher.originalShift = isNaN(s) ? 0 : Math.abs(s % 26);
-    });
-    $('#sc_shiftAlpha').on('input propertychange paste',function(){
-        var c = $(this).val().charCodeAt(0);
-        if( c >= 65 && c <= 90 ){
-            shiftCipher.originalShift = c - 65;
-        } else if( c >= 97 && c <= 122 ){
-            shiftCipher.originalShift = c - 97;
-        } else {
-            shiftCipher.originalShift = 0;
-        }
-    });
+var vigenereCipher = Object.create( VigenereCipher );
+function pageInitVigenereCipher( cipher, elId){
+    cipher.init( elId );
     
     // Respond to changes to the ciphertext
     $('#ciphertext').on('input propertychange paste',function(){
-        shiftCipher.cipherText = $(this).val();
+        cipher.cipherText = $(this).val();
     });
     
-    // Glue ShiftCipher to controls
-    shiftCipher.addEventListener( "plainTextChanged", function(src){
+    cipher.addEventListener( "plainTextChanged", function(src){
         $( '#plaintext' )[0].innerHTML = src.plainText;
-        $( "#outputLegend" )[0].innerHTML = "Plain Text: Shift Cipher (shift=" + src.originalShift + ")";
-    });
-    shiftCipher.addEventListener( "originalShiftChanged", function(src){
-        $( '#sc_shiftAlpha' ).val( String.fromCharCode( src.originalShift+65 ) );
-        $( '#sc_shiftNum' ).val( src.originalShift );
-        $( "#sc_slider" ).slider({ value: src.originalShift });
+        $( "#outputLegend" )[0].innerHTML = "Plain Text: Vigenere Cipher (key=" + src.key + ")";
     });
     
     // Set up initial cipher text
-    shiftCipher.cipherText = $('#ciphertext').text();
-    shiftCipher.originalShift = parseInt( $('#sc_shift').val() ) || 0;
-    
-}   // end pageInitShiftCipher
-*/
-
-//var vigenereCipher = Object.create( VigenereCipher );
-function pageInitVigenereCipher(){
-    
-    vigenereCipher.initFrequencyChart('v_freqChart_1');
-    
-    // Slider control for shift amount
-    $( "#v_slider_1" ).slider({
-          value: 0,
-          min: 0,
-          max: 26,
-          step: 1,
-          slide: function( event, ui ) {
-            vigenereCipher.originalShift = ui.value ;
-          }
-        });
-    
-    // Respond to changes in the Shift Cipher input box
-    $('#v_key').on('input propertychange paste',function(){
-        vigenereCipher.key = $(this).val();
-    });
-    
-    //Glue ShiftCipher to controls
-    vigenereCipher.addEventListener( "plainTextChanged", function(src){
-        $( '#plaintext' )[0].innerHTML = src.plainText;
-        $( "#outputLegend" )[0].innerHTML = "Plain Text: Vigenere Square Cipher (key=" + src.key + ")";
-    });
-    vigenereCipher.addEventListener( "keyChanged", function(src){
-        $( '#v_key' ).val( src.key );
-    });
-    
-    
-    vigenereCipher.key = $('#v_key').val();
-    vigenereCipher.cipherText = $('#ciphertext').text();
-}
+    cipher.cipherText = $('#ciphertext').text();
+  
+}   // end pageInitVigenereCipher
 
 
 // Init on page load
@@ -309,19 +236,19 @@ tyx syx qc lerh erh xsyglih xli jegi sj Ksh.
     -->
     
 <textarea id="ciphertext" style="width:100%; " rows="8">
-Sl, M lezi wpmttih xli wyvpc fsrhw sj ievxl, 
-Erh hergih xli womiw sr peyklxiv-wmpzivih amrkw; 
-Wyraevh M'zi gpmqfih erh nsmrih xli xyqfpmrk qmvxl sj wyr-wtpmx gpsyhw - 
-erh hsri e lyrhvih xlmrkw Csy lezi rsx hvieqih sj - 
-aliipih erh wsevih erh wayrk lmkl mr xli wyrpmx wmpirgi. 
-Lszivmrk xlivi M'zi glewih xli wlsyxmrk amrh epsrk 
-erh jpyrk qc iekiv gvejx xlvsykl jssxpiww leppw sj emv.
-"Yt, yt xli psrk hipmvmsyw fyvrmrk fpyi 
-M'zi xsttih xli amrh-waitx limklxw amxl iewc kvegi, 
-alivi riziv pevo, sv izir iekpi, jpia; 
-erh, almpi amxl wmpirx, pmjxmrk qmrh M'zi xvsh 
-xli lmkl yrxviwtewwih wergxmxc sj wtegi, 
-tyx syx qc lerh erh xsyglih xli jegi sj Ksh.
+        Ri, M muyf wqcsqii nkf wzloz fthgt sk ydsxm, 
+    Uqe hfhffh ybh tonyv pr quxhlyyu-tmqphsii qlokx; 
+    Mxoaflg J'zj wojqgyg bri drjrjx wii yopcpnhj nmwnk pj xoq-ttqcw dptogt - 
+    esx gprj u kvrilhe xmcqhw Dix ieay qpx ilhbqjx rg - 
+    amyhmii uqe wtuufh fhg tazhj imlb lo xmy vvrqcw tmqyqdi. 
+    Miyfvnhj uljlh J'zj wkbwjx wii xbrvxnhj xmsx dmssa 
+    doh kfxok rs hbkjl fsekn wivtoji jtiwmixm kbpqm rg enl.
+    "Xq, yu nkf pthj eiqcujszm evvscqh fqoh 
+    J'zj nrqtjx wii bcqe-wbysu ljcjixx qlul juvz kwuff, 
+    amyuf rjphs pfln, pv jpho ifaof, jqyz; 
+    bri, qkjpj qlul xcofry, flgxnhj nmsx L'wi ylre 
+    xmy kjkm oquvjmsbwxyg teswwjxd ii ttfwh, 
+    qyy ixu qd bdoh fhg uszwkfh ybh gehy rg Ktx.
 </textarea>
 </fieldset>
 
@@ -375,29 +302,13 @@ div.shift div.controls .slider {width:85%; margin: 0.5em auto }
 -->
 
 <!-- Vigenere Square -->
-<fieldset id="vigenereFieldset" style="width: 95%"><legend>Vigenere Square Cipher</legend>
-<div class="content"  >
-    
-    <div>
-        Key: <input type="text" id="v_key" style="width:10em; margin-right: 2em" value="A" />
-        Key Length: <input type="text" id="v_keyLength" style="width:3em; margin-right: 2em" value="1" />
-        <input type="button" value="Guess Key Length" onclick="vigenereCipher.solve();" />
-    </div>
-    <div class="shift">
-        <div class="controls" >
-            <div>Key Character <span class="v_keyChar_1">1</span></div>
-            <input type="text" id="v_keyChar_1" style="width:2em; text-align:center; font-size: larger" value="A" />
-            <div id="v_slider_1" class="slider" >&nbsp;</div>
-        </div>
-        <div id="v_freqChart_1" class="freqChart chart" ></div>
-        <div id="v_dotChart_1" class="dotChart chart" ></div>
-    </div>
-</div>
-    
-    
+<fieldset id="viginereFieldset" style="width: 95%; margin: 1em auto">
+<legend>Vigenere Cipher</legend>
+<div id="vigenereContent"  ></div>
 </fieldset>
-
-
-
+    
+    
+    
+    
 </body>
 </html>
