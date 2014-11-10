@@ -12,110 +12,18 @@
 
 
 <script language="javascript"><!--
-// Backup graph libraries to try:
-// http://raphaeljs.com
-// https://github.com/eoinmurray/histogram
-// https://google-developers.appspot.com/chart/interactive/docs/quick_start
 
-/*
-Sl, M lezi wpmttih xli wyvpc fsrhw sj ievxl, 
-Erh hergih xli womiw sr peyklxiv-wmpzivih amrkw; 
-Wyraevh M'zi gpmqfih erh nsmrih xli xyqfpmrk qmvxl sj wyr-wtpmx gpsyhw - 
-erh hsri e lyrhvih xlmrkw Csy lezi rsx hvieqih sj - 
-aliipih erh wsevih erh wayrk lmkl mr xli wyrpmx wmpirgi. 
-Lszivmrk xlivi M'zi glewih xli wlsyxmrk amrh epsrk 
-erh jpyrk qc iekiv gvejx xlvsykl jssxpiww leppw sj emv.
-"Yt, yt xli psrk hipmvmsyw fyvrmrk fpyi 
-M'zi xsttih xli amrh-waitx limklxw amxl iewc kvegi, 
-alivi riziv pevo, sv izir iekpi, jpia; 
-erh, almpi amxl wmpirx, pmjxmrk qmrh M'zi xvsh 
-xli lmkl yrxviwtewwih wergxmxc sj wtegi, 
-tyx syx qc lerh erh xsyglih xli jegi sj Ksh.
- */
-
-/*
-var Animal = {
-  type: {},//"Invertebrates", // Default value of properties
-  displayType : function(){  // Method which will display type of Animal
-    console.log(this.type['f']);
-  }
-}
-
-var Animal2 = {
-  _listeners : {}, // Default value of properties
-  type : {},
-  displayType : function(){  // Method which will display type of Animal
-      console.log( this._listeners['f']);
-      for( f in this._listeners['f']){
-        //console.log(f);
-    }
-  },
-  setType : function(t){
-      this._listeners['f'] = t;
-      if( this._listeners['f'] == null ){
-            this._listeners['f'] = [t];
-        } else {
-            this._listeners['f'].push(t);
-        }
-  }
-}
-var animal1 = Object.create(Animal); 
-//animal1.setType( 'animal');
-//animal1.type = {};
-animal1.type['f'] = 'animal';
-var fish = Object.create(Animal);
-//fish.type = {};
-fish.type['f'] = 'fish';
-//fish.setType( 'fishes');
-animal1.displayType(); // Output:Invertebrates
-fish.displayType(); // Output:Fishes
-
-
-
-var Foo = {
-    _listeners : {},
-    
-    
-    addEventListener : function( eventType, callback ){
-        if( this._listeners[eventType] == null ){
-            this._listeners[eventType] = [callback];
-        } else {
-            this._listeners[eventType].push(callback);
-        }
-    },
-    
-    fireEvent : function( eventType, arg ){
-        if( this._listeners[eventType] != null ){
-            this._listeners[eventType].map(function(callback){
-                callback(arg);
-            });
-        }
-    }
-    
-};
-
-var a = Object.create(Foo);
-var b = Object.create(Foo);
-a.addEventListener("event1",function(){alert('a1');});
-a.addEventListener("event2",function(){alert('a2');});
-b.addEventListener("event1",function(){alert('b1');});
-b.addEventListener("event2",function(){alert('b2');});
-
-//a.fireEvent("event1");
-*/
 
 /* ********  L O C A L   F U N C T I O N S  ******** */
 
 
 function pageInit(){
     
-    //pageInitShiftCipher();
     pageJsInitShiftCipher( shiftCipherJs, 'shiftJsInitContent');
-    //pageJsInitShiftCipher( shiftCipherJs2, 'shiftJsInitContent2');
-    //pageJsInitShiftCipher2();
     pageInitVigenereCipher(vigenereCipher, 'vigenereContent');
+    //vigenereCipher.key = 'aaaaa';
     
-    $( '#shiftJsInitField legend' ).siblings().slideToggle("slow");
+    //$( '#shiftJsInitField legend' ).siblings().slideToggle("slow");
     
     
     // Make all these fieldsets disappear when their legends are clicked
@@ -124,6 +32,8 @@ function pageInit(){
        $(this).siblings().slideToggle("slow");
       });
     });
+    
+    //loadSecretMessage(0);
 }   // end pageInit
 
 
@@ -169,6 +79,37 @@ function pageInitVigenereCipher( cipher, elId){
   
 }   // end pageInitVigenereCipher
 
+var _secretMessages = [ 
+"Gxx ow yg aflg lzw oadv tdmw qgfvwj,\n\
+Udaetafy zayz aflg lzw kmf\n\
+Zwjw lzwq ugew rggeafy lg ewwl gmj lzmfvwj\n\
+Sl 'we tgqk, Yanw 'wj lzw ymf!\n\
+Vgof ow vanw, khgmlafy gmj xdsew xjge mfvwj\n\
+Gxx oalz gfw zwddmns jgsj!\n\
+Ow danw af xsew gj yg vgof af xdsew. Zwq!\n\
+Fglzafy usf klgh lzw M.K. Saj Xgjuw!",
+        
+"qh, l ltxe vpbrphh mje vykny esgfs rj xcrwl, \n\
+tpd gegeeg xag snmxu oq ptwgkxxt-slpogrhh pknjw; \n\
+lwnzekf i'yi vnipfxf aqh cqiqiw vhh xnobomgi mlvmj oi wnp-sspbv cosnfs - \n\
+drw foqi t juqhkgd wlbpgv chw hdzx pow hkgapiw qf - \n\
+zlxglhh tpd vstteg egf szygi hlka kn wlx uuqpbv slpxpch. \n\
+lhxeumgi tkikg i'yi vjaviw vhh waquwmgi wlrw clrrz \n\
+cng jewnj qr gajik erdjm vhusnih ishvlhwl jaopl qf dmk. \n\
+''wp, xt mje osgi dhpbtiryl duurbpg epng \n\
+i'yi mqpsiw vhh abpd-vaxrt kibihww pktk ituy jvtee, \n\
+zlxte qiogr oekm, ou iogn hezne, ipxy; \n\
+aqh, pjioi pktk wbneqx, ekfwmgi mlrw k'vh xkqd \n\
+wlx jijl nptuilravwxf sdrvviwc hh ssevg, \n\
+pxx hwt pc acng egf tryvjeg xag fdgx qf jsw."
+];
+function loadSecretMessage( index ){
+    var text = _secretMessages[index];
+    var el = document.getElementById('ciphertext');
+    el.value = text;
+    //$('#ciphertext').html( text ); // Oddly, this doesn't work after manual input into textarea
+    $('#ciphertext').trigger('propertychange');
+}
 
 // Init on page load
 $( document ).ready(function() {
@@ -186,7 +127,10 @@ fieldset {
 
 </head>
 <body>
-    <div id="el"></div>
+<fieldset><legend>Secret Messages</legend>
+<input type="button" value="Load Secret Message 1" onclick="loadSecretMessage(0);" />
+<input type="button" value="Load Secret Message 2" onclick="loadSecretMessage(1);" />
+</fieldset>
 
 <!-- Cipher Text -->
 <fieldset style="display: inline; width: 45%"><legend>Cipher Text</legend>
@@ -205,7 +149,7 @@ fieldset {
     tyx syx qc lerh erh xsyglih xli jegi sj Ksh.
     -->    
     <!-- Shift: 4
-    Sl, M lezi wpmttih xli wyvpc fsrhw sj ievxl, 
+Sl, M lezi wpmttih xli wyvpc fsrhw sj ievxl, 
 Erh hergih xli womiw sr peyklxiv-wmpzivih amrkw; 
 Wyraevh M'zi gpmqfih erh nsmrih xli xyqfpmrk qmvxl sj wyr-wtpmx gpsyhw - 
 erh hsri e lyrhvih xlmrkw Csy lezi rsx hvieqih sj - 
@@ -220,35 +164,22 @@ xli lmkl yrxviwtewwih wergxmxc sj wtegi,
 tyx syx qc lerh erh xsyglih xli jegi sj Ksh.
     -->
     <!-- Vigenere: 'cadet'
-        Ri, M muyf wqcsqii nkf wzloz fthgt sk ydsxm, 
-    Uqe hfhffh ybh tonyv pr quxhlyyu-tmqphsii qlokx; 
-    Mxoaflg J'zj wojqgyg bri drjrjx wii yopcpnhj nmwnk pj xoq-ttqcw dptogt - 
-    esx gprj u kvrilhe xmcqhw Dix ieay qpx ilhbqjx rg - 
-    amyhmii uqe wtuufh fhg tazhj imlb lo xmy vvrqcw tmqyqdi. 
-    Miyfvnhj uljlh J'zj wkbwjx wii xbrvxnhj xmsx dmssa 
-    doh kfxok rs hbkjl fsekn wivtoji jtiwmixm kbpqm rg enl.
-    "Xq, yu nkf pthj eiqcujszm evvscqh fqoh 
-    J'zj nrqtjx wii bcqe-wbysu ljcjixx qlul juvz kwuff, 
-    amyuf rjphs pfln, pv jpho ifaof, jqyz; 
-    bri, qkjpj qlul xcofry, flgxnhj nmsx L'wi ylre 
-    xmy kjkm oquvjmsbwxyg teswwjxd ii ttfwh, 
-    qyy ixu qd bdoh fhg uszwkfh ybh gehy rg Ktx.
+qh, l ltxe vpbrphh mje vykny esgfs rj xcrwl, 
+    tpd gegeeg xag snmxu oq ptwgkxxt-slpogrhh pknjw; 
+    lwnzekf i'yi vnipfxf aqh cqiqiw vhh xnobomgi mlvmj oi wnp-sspbv cosnfs - 
+    drw foqi t juqhkgd wlbpgv chw hdzx pow hkgapiw qf - 
+    zlxglhh tpd vstteg egf szygi hlka kn wlx uuqpbv slpxpch. 
+    lhxeumgi tkikg i'yi vjaviw vhh waquwmgi wlrw clrrz 
+    cng jewnj qr gajik erdjm vhusnih ishvlhwl jaopl qf dmk. 
+    "wp, xt mje osgi dhpbtiryl duurbpg epng 
+    i'yi mqpsiw vhh abpd-vaxrt kibihww pktk ituy jvtee, 
+    zlxte qiogr oekm, ou iogn hezne, ipxy; 
+    aqh, pjioi pktk wbneqx, ekfwmgi mlrw k'vh xkqd 
+    wlx jijl nptuilravwxf sdrvviwc hh ssevg, 
+    pxx hwt pc acng egf tryvjeg xag fdgx qf jsw.
     -->
     
 <textarea id="ciphertext" style="width:100%; " rows="8">
-        Ri, M muyf wqcsqii nkf wzloz fthgt sk ydsxm, 
-    Uqe hfhffh ybh tonyv pr quxhlyyu-tmqphsii qlokx; 
-    Mxoaflg J'zj wojqgyg bri drjrjx wii yopcpnhj nmwnk pj xoq-ttqcw dptogt - 
-    esx gprj u kvrilhe xmcqhw Dix ieay qpx ilhbqjx rg - 
-    amyhmii uqe wtuufh fhg tazhj imlb lo xmy vvrqcw tmqyqdi. 
-    Miyfvnhj uljlh J'zj wkbwjx wii xbrvxnhj xmsx dmssa 
-    doh kfxok rs hbkjl fsekn wivtoji jtiwmixm kbpqm rg enl.
-    "Xq, yu nkf pthj eiqcujszm evvscqh fqoh 
-    J'zj nrqtjx wii bcqe-wbysu ljcjixx qlul juvz kwuff, 
-    amyuf rjphs pfln, pv jpho ifaof, jqyz; 
-    bri, qkjpj qlul xcofry, flgxnhj nmsx L'wi ylre 
-    xmy kjkm oquvjmsbwxyg teswwjxd ii ttfwh, 
-    qyy ixu qd bdoh fhg uszwkfh ybh gehy rg Ktx.
 </textarea>
 </fieldset>
 

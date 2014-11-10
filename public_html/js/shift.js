@@ -37,7 +37,7 @@ var ShiftCipher = {
         _controlsTitleDiv : null,
         _shiftAlphaInput : null,
         _shiftNumInput : null,
-        _slideDiv : null,
+        _sliderDiv : null,
         _guessBtn : null,
     _freqDiv : null,
     _dotDiv : null,
@@ -106,7 +106,6 @@ var ShiftCipher = {
             });
             This._shiftAlphaInput.setAttribute('value', String.fromCharCode( This.originalShift+65 ) );
             
-
             var shiftNumId = 'shiftNum_' + this.generateUUID();
             This._shiftNumInput.setAttribute('type', 'text');
             This._shiftNumInput.setAttribute('class', 'shiftNum');
@@ -138,8 +137,8 @@ var ShiftCipher = {
             this.addEventListener('originalShiftChanged',function(src){
                 $.Deferred(function(){
                     var shift = src.originalShift;
-                    This._shiftAlphaInput.setAttribute('value', String.fromCharCode( shift+65 ) ); 
-                    This._shiftNumInput.setAttribute('value', shift );
+                    $( This._shiftNumInput ).val( shift );
+                    $( This._shiftAlphaInput ).val( String.fromCharCode( shift+65 ) );
                     $( This._sliderDiv ).slider({ value: shift });    
                 });
             });
@@ -200,8 +199,18 @@ var ShiftCipher = {
         }
     },
     
+    removeEventListener : function( eventType, callback ){
+        if( this._listeners == null ) return;
+        if( this._listeners[eventType] == null ) return;
+        var index = this._listeners[eventType].indexOf( callback );
+        if( index > -1 ){
+            this._listeners[eventType] = this._listeners[eventType].splice(index,1);
+        }
+    },
+    
     fireEvent : function( eventType, arg ){
         if( this._listeners != null && this._listeners[eventType] != null ){
+            if( arg == null ) arg = this;
             this._listeners[eventType].map(function(callback){
                 callback(arg);
             });
@@ -210,7 +219,7 @@ var ShiftCipher = {
     
     get cipherText() { return this._cipherText; },
     set cipherText ( text ){
-        //if( text === this._cipherText ) return;
+        if( text === this._cipherText ) return;
         var This = this;
         $.Deferred(function(){
             This._cipherText = text;
@@ -232,7 +241,7 @@ var ShiftCipher = {
     
     get stepStart() { return this._stepStart; },
     set stepStart( start ){
-        //if( start === this._stepStart ) return;
+        if( start === this._stepStart ) return;
         var This = this;
         $.Deferred(function(){
             This._stepStart = start;
@@ -254,7 +263,7 @@ var ShiftCipher = {
     
     get step() { return this._step; },
     set step( step ){
-        //if( step === this._step ) return;
+        if( step === this._step ) return;
         var This = this;
         $.Deferred(function(){
             This._step = step;
@@ -276,10 +285,11 @@ var ShiftCipher = {
     
     get originalShift() { return this._originalShift; },
     set originalShift ( shift ){
-        //if( shift === this._originalShift ) return;
+        if( shift === this._originalShift ) return;
         var This = this;
         $.Deferred(function(){
             This._originalShift = shift;
+
             This.updateFrequencyChart();
             This.updateDotProductChart('shift');
             This.fireEvent( "originalShiftChanged", This );
