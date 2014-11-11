@@ -132,7 +132,6 @@ var ShiftCipher = {
               $( This._guessBtn ).on('click',function(){
                   This.guess();
               });
-              
 
             this.addEventListener('originalShiftChanged',function(src){
                 $.Deferred(function(){

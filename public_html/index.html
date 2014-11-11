@@ -3,6 +3,7 @@
 <head>
 <title>Javascript (De)Ciphers for Education</title>
 <link href="js/libs/jquery-ui-1.11.2/jquery-ui.css" rel='stylesheet' type='text/css' />
+<link href="js/libs/jquery-ui-1.11.2/themes/overcast/theme.css" rel='stylesheet' type='text/css' />
 <script src="js/libs/jquery/jquery.js"></script>
 <script src="js/libs/jquery-ui-1.11.2/jquery-ui.js"></script>
 <script src="js/libs/highcharts/highcharts.js"></script>
@@ -10,6 +11,18 @@
 <script src="js/shift.js"></script>
 <script src="js/vigenere.js"></script>
 
+
+<style type="text/css">
+div.content table td  { text-align: center; }
+div.content table td div { margin: 1em; text-align: center}
+div.content { }
+div.shift {width: 100%; margin: 0 auto;  }
+div.shift div.controls { display:inline-block; width: 18%; margin: 0; text-align: center; position: relative; top: 50%; transform: translateY(-30%);}
+div.shift div.controls div { margin: 0.5em 0; }
+div.shift div.controls .slider {width:85%; margin: 0.5em auto }
+.chart { display:inline-block; width:37%; height:10em; border: solid #AAA 1px; padding: 0 15px 0px 0; margin: 5px ; border-radius: 5px }
+.shiftAlpha, .shiftNum {width:2em; text-align:center; font-size: larger; margin: 2px}
+</style>
 
 <script language="javascript"><!--
 
@@ -189,18 +202,6 @@ qh, l ltxe vpbrphh mje vykny esgfs rj xcrwl,
 </fieldset>
 
 <div id="log"></div>
-<style type="text/css">
-div.content table td  { text-align: center; }
-div.content table td div { margin: 1em; text-align: center}
-div.content { }
-div.shift {width: 100%; margin: 0 auto;  }
-div.shift div.controls { display:inline-block; width: 18%; margin: 0; text-align: center; position: relative; top: 50%; transform: translateY(-30%);}
-div.shift div.controls div { margin: 0.5em 0; }
-div.shift div.controls .slider {width:85%; margin: 0.5em auto }
-.chart { display:inline-block; width:37%; height:10em; border: solid #AAA 1px; padding: 0 15px 0px 0; margin: 5px ; border-radius: 5px }
-.shiftAlpha, .shiftNum {width:2em; text-align:center; font-size: larger; margin: 2px}
-</style>
-
 <fieldset id="shiftJsInitField" style="width: 95%; margin: 1em auto">
 <legend>Shift (Caesar) Cipher</legend>
 <div id="shiftJsInitContent"  ></div>
