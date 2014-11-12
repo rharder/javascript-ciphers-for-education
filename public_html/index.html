@@ -37,9 +37,6 @@ function pageInit(){
     
     pageJsInitShiftCipher( shiftCipherJs, 'shiftJsInitContent');
     pageInitVigenereCipher(vigenereCipher, 'vigenereContent');
-    //vigenereCipher.key = 'aaaaa';
-    
-    //$( '#shiftJsInitField legend' ).siblings().slideToggle("slow");
     
     $('fieldset.plaintext').hcSticky();
     
@@ -150,60 +147,19 @@ fieldset {
 </fieldset>
 
 <!-- Cipher Text -->
-<fieldset class="ciphertext" style="display: inline; width: 45%"><legend>Cipher Text</legend>
-    <!--
-    Erh hergih xli womiw sr peyklxiv-wmpzivih amrkw; 
-    Wyraevh M'zi gpmqfih erh nsmrih xli xyqfpmrk qmvxl sj wyr-wtpmx gpsyhw - 
-    erh hsri e lyrhvih xlmrkw Csy lezi rsx hvieqih sj - 
-    aliipih erh wsevih erh wayrk lmkl mr xli wyrpmx wmpirgi. 
-    Lszivmrk xlivi M'zi glewih xli wlsyxmrk amrh epsrk 
-    erh jpyrk qc iekiv gvejx xlvsykl jssxpiww leppw sj emv.
-    "Yt, yt xli psrk hipmvmsyw fyvrmrk fpyi 
-    M'zi xsttih xli amrh-waitx limklxw amxl iewc kvegi, 
-    alivi riziv pevo, sv izir iekpi, jpia; 
-    erh, almpi amxl wmpirx, pmjxmrk qmrh M'zi xvsh 
-    xli lmkl yrxviwtewwih wergxmxc sj wtegi, 
-    tyx syx qc lerh erh xsyglih xli jegi sj Ksh.
-    -->    
-    <!-- Shift: 4
-Sl, M lezi wpmttih xli wyvpc fsrhw sj ievxl, 
-Erh hergih xli womiw sr peyklxiv-wmpzivih amrkw; 
-Wyraevh M'zi gpmqfih erh nsmrih xli xyqfpmrk qmvxl sj wyr-wtpmx gpsyhw - 
-erh hsri e lyrhvih xlmrkw Csy lezi rsx hvieqih sj - 
-aliipih erh wsevih erh wayrk lmkl mr xli wyrpmx wmpirgi. 
-Lszivmrk xlivi M'zi glewih xli wlsyxmrk amrh epsrk 
-erh jpyrk qc iekiv gvejx xlvsykl jssxpiww leppw sj emv.
-"Yt, yt xli psrk hipmvmsyw fyvrmrk fpyi 
-M'zi xsttih xli amrh-waitx limklxw amxl iewc kvegi, 
-alivi riziv pevo, sv izir iekpi, jpia; 
-erh, almpi amxl wmpirx, pmjxmrk qmrh M'zi xvsh 
-xli lmkl yrxviwtewwih wergxmxc sj wtegi, 
-tyx syx qc lerh erh xsyglih xli jegi sj Ksh.
-    -->
-    <!-- Vigenere: 'cadet'
-qh, l ltxe vpbrphh mje vykny esgfs rj xcrwl, 
-    tpd gegeeg xag snmxu oq ptwgkxxt-slpogrhh pknjw; 
-    lwnzekf i'yi vnipfxf aqh cqiqiw vhh xnobomgi mlvmj oi wnp-sspbv cosnfs - 
-    drw foqi t juqhkgd wlbpgv chw hdzx pow hkgapiw qf - 
-    zlxglhh tpd vstteg egf szygi hlka kn wlx uuqpbv slpxpch. 
-    lhxeumgi tkikg i'yi vjaviw vhh waquwmgi wlrw clrrz 
-    cng jewnj qr gajik erdjm vhusnih ishvlhwl jaopl qf dmk. 
-    "wp, xt mje osgi dhpbtiryl duurbpg epng 
-    i'yi mqpsiw vhh abpd-vaxrt kibihww pktk ituy jvtee, 
-    zlxte qiogr oekm, ou iogn hezne, ipxy; 
-    aqh, pjioi pktk wbneqx, ekfwmgi mlrw k'vh xkqd 
-    wlx jijl nptuilravwxf sdrvviwc hh ssevg, 
-    pxx hwt pc acng egf tryvjeg xag fdgx qf jsw.
-    -->
-    
+
+<fieldset class="ciphertext" style="display: inline-block; width: 45%"><legend>Cipher Text</legend>
 <textarea id="ciphertext" style="width:100%; " rows="8">
 </textarea>
 </fieldset>
 
+    
 <!-- Plain Text-->
-<fieldset class="plaintext" style="display: inline; width: 45%"><legend id="outputLegend">Plain Text</legend>
+
+<fieldset class="plaintext" style="display: inline-block; width: 45%"><legend id="outputLegend">Plain Text</legend>
 <textarea id="plaintext" style="width:100%; " rows="8"></textarea>
 </fieldset>
+
 
 <div id="log"></div>
 <fieldset id="shiftJsInitField" style="width: 95%; margin: 1em auto">
