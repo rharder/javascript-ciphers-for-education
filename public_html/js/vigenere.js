@@ -29,6 +29,7 @@ var VigenereCipher = {
     
     init : function( domID ){
         this._listeners = {};
+        this._plainTextCache = {};
         this._shiftCiphers = [];
         this._shiftDivs = [];
         this._shiftCipherDivs = [];
@@ -90,6 +91,7 @@ var VigenereCipher = {
     get key() { return this._key; },
     set key( key ){
         //if( key === this._key ) return;
+        var This = this;
         var preppedKey = '';
         for( var i = 0 ; i < key.length; i++ ){
             var c = key.charCodeAt( i );
@@ -149,9 +151,12 @@ var VigenereCipher = {
         
         //if( preppedKey.length == this._shiftCiphers.length ){
             for( var i = 0; i < preppedKey.length; i++ ){
-                this._shiftCiphers[i].step = preppedKey.length;
-                this._shiftCiphers[i].stepStart = i;
-                this._shiftCiphers[i].originalShift = preppedKey.charCodeAt(i) - 65;
+                var x = i;
+                This._shiftCiphers[i].batch(function(){
+                    This._shiftCiphers[x].step = preppedKey.length;
+                    This._shiftCiphers[x].stepStart = x;
+                    This._shiftCiphers[x].originalShift = preppedKey.charCodeAt(x) - 65;
+                });
             }
         //} 
         
@@ -183,6 +188,7 @@ var VigenereCipher = {
         return this._getPlainText( this.key );
     },
     _getPlainText : function( key ){
+        if( key == null ) return '';
         if( this._plainTextCache[key] == null ){
             //var out = this.cipherText;
             var plains = [];

@@ -7,12 +7,15 @@
 <script src="js/libs/jquery/jquery.js"></script>
 <script src="js/libs/jquery-ui-1.11.2/jquery-ui.js"></script>
 <script src="js/libs/highcharts/highcharts.js"></script>
+<script src="js/jquery.hc-sticky-min.js"></script>
 <!--script src="js/libs/object-watch/object-watch.js"></script-->
 <script src="js/shift.js"></script>
 <script src="js/vigenere.js"></script>
 
 
 <style type="text/css">
+fieldset.plaintext { z-index: 10; background-color: #FFF }
+fieldset.plaintext legend { background-color: #FFF }
 div.content table td  { text-align: center; }
 div.content table td div { margin: 1em; text-align: center}
 div.content { }
@@ -38,6 +41,7 @@ function pageInit(){
     
     //$( '#shiftJsInitField legend' ).siblings().slideToggle("slow");
     
+    $('fieldset.plaintext').hcSticky();
     
     // Make all these fieldsets disappear when their legends are clicked
     $(function(){
@@ -146,7 +150,7 @@ fieldset {
 </fieldset>
 
 <!-- Cipher Text -->
-<fieldset style="display: inline; width: 45%"><legend>Cipher Text</legend>
+<fieldset class="ciphertext" style="display: inline; width: 45%"><legend>Cipher Text</legend>
     <!--
     Erh hergih xli womiw sr peyklxiv-wmpzivih amrkw; 
     Wyraevh M'zi gpmqfih erh nsmrih xli xyqfpmrk qmvxl sj wyr-wtpmx gpsyhw - 
@@ -197,46 +201,31 @@ qh, l ltxe vpbrphh mje vykny esgfs rj xcrwl,
 </fieldset>
 
 <!-- Plain Text-->
-<fieldset style="display: inline; width: 45%"><legend id="outputLegend">Plain Text</legend>
+<fieldset class="plaintext" style="display: inline; width: 45%"><legend id="outputLegend">Plain Text</legend>
 <textarea id="plaintext" style="width:100%; " rows="8"></textarea>
 </fieldset>
 
 <div id="log"></div>
 <fieldset id="shiftJsInitField" style="width: 95%; margin: 1em auto">
 <legend>Shift (Caesar) Cipher</legend>
+<div
+><div class="instructions">Adjust the shift to align the ciphertext's most common letter with 
+    the English most common letter 'E'.</div>
 <div id="shiftJsInitContent"  ></div>
-</fieldset>
-
-<!--
-<fieldset id="shiftJsInitField2" style="width: 95%; margin: 1em auto">
-<legend>Shift (Caesar) Cipher (JS Init, 2)</legend>
-<div id="shiftJsInitContent2"  ></div>
-</fieldset>
--->
-
-<!-- Shift Cipher -->
-<!--
-<fieldset id="shiftCipherFieldset" style="width: 95%; margin: 1em auto"><legend>Shift (Caesar) Cipher</legend>
-<div class="content"  >
-  <div class="shift">
-    <div class="controls" >
-        <div>Original Shift</div>
-        <input type="text" id="sc_shiftAlpha" style="width:2em; text-align:center; font-size: larger" value="A" />
-        <input type="text" id="sc_shiftNum" style="width:2em; text-align:center; font-size: larger" value="0" />
-        <div id="sc_slider" class="slider" >&nbsp;</div>
-        <input type="button" value="Guess" onclick="shiftCipher.guess();" />
-    </div>
-    <div id="sc_freqChart" class="freqChart chart" ></div>
-    <div id="sc_dotChart" class="dotChart chart" ></div>
-  </div>
 </div>
 </fieldset>
--->
+
 
 <!-- Vigenere Square -->
 <fieldset id="viginereFieldset" style="width: 95%; margin: 1em auto">
 <legend>Vigenere Cipher</legend>
+<div>
+<div class="instructions">
+    First add letters to the key until dot products exhibit a clear spike at one letter.
+    Then adjust each shift to align the ciphertext's most common letter 
+    with the English most common letter 'E'.</div>
 <div id="vigenereContent"  ></div>
+</div>
 </fieldset>
     
     

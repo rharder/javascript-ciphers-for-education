@@ -29,6 +29,8 @@ var ShiftCipher = {
     _stepStart : 0,
     _plainTextCache : null,
     _listeners : null,
+    _suspendUpdates : false,
+    _toUpdate : null,
     
     // HTML elements
     _container : null,
@@ -61,6 +63,11 @@ var ShiftCipher = {
     <div id="sc_freqChart" class="freqChart chart" ></div>
     <div id="sc_dotChart" class="dotChart chart" ></div>
   </div> */        
+        
+        this._toUpdate = {};
+        this._plainTextCache = {};
+        this._listeners = {};
+        
         var This = this;
         This._container = document.getElementById( domID );
             This._shiftDiv = document.createElement('div');
@@ -207,13 +214,34 @@ var ShiftCipher = {
         }
     },
     
-    fireEvent : function( eventType, arg ){
-        if( this._listeners != null && this._listeners[eventType] != null ){
-            if( arg == null ) arg = this;
-            this._listeners[eventType].map(function(callback){
-                callback(arg);
-            });
+    fireEvent : function( eventType ){
+        var This = this;
+        var func = function(){
+            if( This._listeners != null && This._listeners[eventType] != null ){
+                This._listeners[eventType].map(function(callback){
+                    callback(This);
+                });
+            }
+        };
+        if( This._suspendUpdates ){
+            This._toUpdate[eventType] = func;
+        } else {
+            func();
         }
+    },
+    
+    batch : function( doThisBatch ){
+        //this._toUpdate = {};
+        //this._suspendUpdates = true;
+        doThisBatch();
+        /*this._suspendUpdates = false;
+        var getType = {};
+        for( f in this._toUpdate ){
+            if( f && getType.toString.call(f) === '[object Function]' ){
+                f();
+            }
+        }
+        this._toUpdate = {};*/
     },
     
     get cipherText() { return this._cipherText; },
@@ -223,11 +251,12 @@ var ShiftCipher = {
         $.Deferred(function(){
             This._cipherText = text;
             This._plainTextCache = {}; // Clear cached deciphered contents
+            
             This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText );
             This.updateFrequencyChart();
             This.updateDotProductChart();
-            This.fireEvent( "cipherTextChanged", This );
-            This.fireEvent( "plainTextChanged", This );
+            This.fireEvent( "cipherTextChanged" );
+            This.fireEvent( "plainTextChanged" );
         
             // Pre-cache the deciphered text
             $.Deferred(function(){
@@ -242,58 +271,58 @@ var ShiftCipher = {
     set stepStart( start ){
         if( start === this._stepStart ) return;
         var This = this;
-        $.Deferred(function(){
+        //$.Deferred(function(){
             This._stepStart = start;
             This._plainTextCache = {}; // Clear cached deciphered contents
             This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText, This.stepStart, This.step );
             This.updateFrequencyChart();
             This.updateDotProductChart();
-            This.fireEvent( "stepStartChanged", This );
-            This.fireEvent( "plainTextChanged", This );
+            This.fireEvent( "stepStartChanged" );
+            This.fireEvent( "plainTextChanged" );
         
             // Pre-cache the deciphered text
-            $.Deferred(function(){
-                for( var i = 0; i < 26; i++ ){
-                    This.getPlainText(i); // pre-cache
-                }
-            });
-        });
+            //$.Deferred(function(){
+            //    for( var i = 0; i < 26; i++ ){
+            //        This.getPlainText(i); // pre-cache
+            //    }
+            //});
+        //});
     },
     
     get step() { return this._step; },
     set step( step ){
         if( step === this._step ) return;
         var This = this;
-        $.Deferred(function(){
+        //$.Deferred(function(){
             This._step = step;
             This._plainTextCache = {}; // Clear cached deciphered contents
             This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText, This.stepStart, This.step );
             This.updateFrequencyChart();
             This.updateDotProductChart();
-            This.fireEvent( "stepChanged", This );
-            This.fireEvent( "plainTextChanged", This );
+            This.fireEvent( "stepChanged" );
+            This.fireEvent( "plainTextChanged" );
         
             // Pre-cache the deciphered text
-            $.Deferred(function(){
-                for( var i = 0; i < 26; i++ ){
-                    This.getPlainText(i); // pre-cache
-                }
-            });
-        });
+            //$.Deferred(function(){
+            //    for( var i = 0; i < 26; i++ ){
+            //        This.getPlainText(i); // pre-cache
+            //    }
+            //});
+        //});
     },
     
     get originalShift() { return this._originalShift; },
     set originalShift ( shift ){
         if( shift === this._originalShift ) return;
         var This = this;
-        $.Deferred(function(){
+        //$.Deferred(function(){
             This._originalShift = shift;
 
             This.updateFrequencyChart();
             This.updateDotProductChart('shift');
-            This.fireEvent( "originalShiftChanged", This );
-            This.fireEvent( "plainTextChanged", This );
-        });
+            This.fireEvent( "originalShiftChanged" );
+            This.fireEvent( "plainTextChanged" );
+        //});
     },
     
     get plainText() {
@@ -421,7 +450,7 @@ var ShiftCipher = {
             totalChars += count;
         }
         for( var i = 0; i < paddedFreqs.length; i++ ){
-            paddedFreqs[i] = 1.0 * paddedFreqs[i] / totalChars;
+            paddedFreqs[i] = paddedFreqs[i] == null || totalChars == 0 ? 0.0 : 1.0 * paddedFreqs[i] / totalChars;
         }
         return paddedFreqs;
     },
@@ -561,32 +590,47 @@ var ShiftCipher = {
     
     
     updateFrequencyChart : function(){
-        var shiftedFreqs = this.shiftArray(this.paddedFrequencies,this.originalShift);
-        if( this._freqChart != null ){
-            this._freqChart.series[1].setData(shiftedFreqs == null ? [] : shiftedFreqs);
+        var This = this;
+        var func = function(){
+            var shiftedFreqs = This.shiftArray(This.paddedFrequencies,This.originalShift);
+            if( This._freqChart != null ){
+                if( shiftedFreqs == null ){
+                    This._freqChart.series[1].setData([]);
+                } else {
+                    This._freqChart.series[1].setData(shiftedFreqs);
+
+                }
+            }
+        };
+        if( This._suspendUpdates ){
+            This._toUpdate['updateFrequencyChart'] = func;
+        } else {
+            func();
         }
-        
-        //var one = this.shiftArray( this.ARRAY_ONE, this.originalShift );
-        //var dot = this.dotProduct( shiftedFreqs, one, 'first' );
-        //this._dotChart.series[1].setData( dot );
-        //this._dotChart.series[1].setData(shiftedFreqs);
     },
     
     updateDotProductChart : function(toUpdate){
-        //var dot = this.dotProduct( this.paddedFrequencies, this.ENGLISH_FREQUENCIES, 'both' );
-        var dots = this.dotProductCoincidence;
-        if( toUpdate == null || toUpdate === 'freq' ){
-            this._dotChart.series[0].setData( dots == null ? [] : dots );
-        }
-        if( toUpdate == null || toUpdate === 'shift' ){
-            var shiftMarker = [];
-            for( var i = 0; i < 26; i++ ){
-                shiftMarker[i] = 0;
+        var This = this;
+        var func = function(){
+            var dots = This.dotProductCoincidence;
+            if( toUpdate == null || toUpdate === 'freq' ){
+                This._dotChart.series[0].setData( dots == null ? [] : dots );
             }
-            shiftMarker[ this.originalShift ] = dots[ this.originalShift ];
-            if( this._dotChart != null ){
-                this._dotChart.series[1].setData( shiftMarker == null ? [] : shiftMarker );
+            if( toUpdate == null || toUpdate === 'shift' ){
+                var shiftMarker = [];
+                for( var i = 0; i < 26; i++ ){
+                    shiftMarker[i] = 0;
+                }
+                shiftMarker[ This.originalShift ] = dots[ This.originalShift ];
+                if( This._dotChart != null ){
+                    This._dotChart.series[1].setData( shiftMarker == null ? [] : shiftMarker );
+                }
             }
+        };
+        if( This._suspendUpdates ){
+            This._toUpdate['updateDotProductChart'] = func;
+        } else {
+            func();
         }
     }
     
