@@ -7,15 +7,17 @@
 <script src="js/libs/jquery/jquery.js"></script>
 <script src="js/libs/jquery-ui-1.11.2/jquery-ui.js"></script>
 <script src="js/libs/highcharts/highcharts.js"></script>
-<script src="js/jquery.hc-sticky-min.js"></script>
-<!--script src="js/libs/object-watch/object-watch.js"></script-->
+<script src="js/jquery.hc-sticky.min.js"></script>
+<script src="js/jquery.animate-shadow-min.js"></script>
 <script src="js/shift.js"></script>
 <script src="js/vigenere.js"></script>
 
 
 <style type="text/css">
-fieldset.plaintext { z-index: 10; background-color: #FFF }
-fieldset.plaintext legend { background-color: #FFF }
+fieldset.plaintext { z-index: 10; background-color: rgba(255,255,255,0.7); display: inline-block; width: 45%;  }
+fieldset.plaintext textarea { background-color: rgba(255,255,255,0.7) }
+fieldset.plaintext div { opacity: 1.0 }
+fieldset.plaintext legend { background-color: #FFF;  }
 div.content table td  { text-align: center; }
 div.content table td div { margin: 1em; text-align: center}
 div.content { }
@@ -38,7 +40,15 @@ function pageInit(){
     pageJsInitShiftCipher( shiftCipherJs, 'shiftJsInitContent');
     pageInitVigenereCipher(vigenereCipher, 'vigenereContent');
     
-    $('fieldset.plaintext').hcSticky();
+    $('fieldset.plaintext').hcSticky({
+        onStart: function(){
+            
+        },
+        onStop: function(){
+        }
+    });
+  // <div id="box2" onmouseover="jQuery(this).stop().animate({boxShadow: '-30px 0 30px #699, 30px 0 30px #969, 0 -30px 30px #996, 0 30px 30px #669'})" onmouseout="jQuery(this).stop().animate({boxShadow: '0 0 10px #699, 0 0 10px #969, 0 0 10px #996, 0 0 30px #669'})" style="box-shadow: rgb(102, 153, 153) 0px 0px 10px 0px, rgb(153, 102, 153) 0px 0px 10px 0px, rgb(153, 153, 102) 0px 0px 10px 0px, rgb(102, 102, 153) 0px 0px 30px 0px;">mouse over</div>
+        $('#ciphertext').stop().animate({boxShadow: '-30px 0 30px #699, 30px 0 30px #969, 0 -30px 30px #996, 0 30px 30px #669'});
     
     // Make all these fieldsets disappear when their legends are clicked
     $(function(){
@@ -144,14 +154,16 @@ fieldset {
     <noscript>
         <h1>You must have scripting enabled to use this page.</h1>
     </noscript>
-<fieldset><legend>Secret Messages</legend>
+
+<fieldset ><legend>Secret Messages</legend>
 <input type="button" value="Load Secret Message 1" onclick="loadSecretMessage(0);" />
 <input type="button" value="Load Secret Message 2" onclick="loadSecretMessage(1);" />
 </fieldset>
 
 <!-- Cipher Text -->
 
-<fieldset class="ciphertext" style="display: inline-block; width: 45%"><legend>Cipher Text</legend>
+<fieldset class="ciphertext" style="display: inline-block; width: 45%">
+<legend>Cipher Text</legend>
 <textarea id="ciphertext" style="width:100%; " rows="8">
 </textarea>
 </fieldset>
@@ -159,7 +171,8 @@ fieldset {
     
 <!-- Plain Text-->
 
-<fieldset class="plaintext" style="display: inline-block; width: 45%"><legend id="outputLegend">Plain Text</legend>
+<fieldset class="plaintext sticky" >
+<legend id="outputLegend">Plain Text</legend>
 <textarea id="plaintext" style="width:100%; " rows="8"></textarea>
 </fieldset>
 
