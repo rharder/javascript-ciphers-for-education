@@ -9,7 +9,8 @@ https://cdn.rawgit.com/rharder/javascript-ciphers-for-education/master/public_ht
 <title>Javascript (De)Ciphers for Education</title>
 <meta charset="UTF-8" />
 <link href="js/libs/jquery-ui-1.11.2/jquery-ui.css" rel='stylesheet' type='text/css' />
-<link href="js/libs/jquery-ui-1.11.2/themes/overcast/theme.css" rel='stylesheet' type='text/css' />
+<link href="js/libs/jquery-ui-1.11.2/themes/smoothness/theme.css" rel='stylesheet' type='text/css' />
+<!--link href="js/libs/jquery-ui-1.11.2.custom/jquery-ui.css" rel='stylesheet' type='text/css' /-->
 <script src="js/libs/jquery/jquery.js"></script>
 <script src="js/libs/jquery-ui-1.11.2/jquery-ui.js"></script>
 <script src="js/libs/highcharts/highcharts.js"></script>
@@ -19,10 +20,14 @@ https://cdn.rawgit.com/rharder/javascript-ciphers-for-education/master/public_ht
 <script src="js/vigenere.js"></script>
 
 <style type="text/css">
-fieldset.plaintext { z-index: 10; background-color: rgba(255,255,255,0.7); display: inline-block; width: 45%;  }
+body { background-color: #FFF }
+fieldset.secretMessages {display: block; width: 94.5%;}
+fieldset.plaintext, fieldset.ciphertext {display: inline-block; width: 47%; }
+fieldset.plaintext { z-index: 10; background-color: rgba(255,255,255,0.7);   }
 fieldset.plaintext textarea { background-color: rgba(255,255,255,0.7) }
 fieldset.plaintext div { opacity: 1.0 }
-fieldset.plaintext legend { background-color: #FFF;  }
+fieldset legend { background-color: #FFF;  }
+.instructions { margin-bottom: 1em }
 div.content table td  { text-align: center; }
 div.content table td div { margin: 1em; text-align: center}
 div.content { }
@@ -39,15 +44,20 @@ div.shift div.controls .slider {width:85%; margin: 0.5em auto }
 
 /* ********  L O C A L   F U N C T I O N S  ******** */
 
+// Init on page load
+$( document ).ready(function() {
+    pageInit();
+});
+
 
 function pageInit(){
     
-    pageJsInitShiftCipher( shiftCipherJs, 'shiftJsInitContent');
+    pageInitShiftCipher( shiftCipher, 'shiftContent');
     pageInitVigenereCipher(vigenereCipher, 'vigenereContent');
     
     $('fieldset.plaintext').hcSticky({
         onStart: function(){
-            
+            // would like some kind of shadow effect here
         },
         onStop: function(){
         }
@@ -59,6 +69,8 @@ function pageInit(){
     $(function(){
       $('legend').on('click',function(){
        $(this).siblings().slideToggle("slow");
+       
+       // Some legends have [-] or [+] in their title
        var oldVal = $(this).text();
        if( oldVal.indexOf('[\u2013]') == 0 ){ // EN-Dash
          $(this).text( oldVal.replace(/\[–\]/, '[+]') );
@@ -69,15 +81,22 @@ function pageInit(){
       });
     });
     
-    //loadSecretMessage(0);
+    
+    $( '#cipherTabs' ).tabs({
+        activate: function(event,ui){
+            $(window).resize();
+        }
+    });
+    
+    loadSecretMessage(0);  // Pre-load a message
+    $(window).resize();
 }   // end pageInit
 
 
-var shiftCipher    = Object.create( ShiftCipher );
-var shiftCipherJs  = Object.create( ShiftCipher );
-var shiftCipherJs2 = Object.create( ShiftCipher );
+var shiftCipher  = Object.create( ShiftCipher );
+var vigenereCipher = Object.create( VigenereCipher );
 
-function pageJsInitShiftCipher( cipher, elId){
+function pageInitShiftCipher( cipher, elId){
     cipher.init( elId );
     
     // Respond to changes to the ciphertext
@@ -96,7 +115,6 @@ function pageJsInitShiftCipher( cipher, elId){
   
 }   // end pageInitShiftCipher
 
-var vigenereCipher = Object.create( VigenereCipher );
 function pageInitVigenereCipher( cipher, elId){
     cipher.init( elId );
     
@@ -143,14 +161,8 @@ function loadSecretMessage( index ){
     var text = _secretMessages[index];
     var el = document.getElementById('ciphertext');
     el.value = text;
-    //$('#ciphertext').html( text ); // Oddly, this doesn't work after manual input into textarea
     $('#ciphertext').trigger('propertychange');
 }
-
-// Init on page load
-$( document ).ready(function() {
-    pageInit();
-});
 
 // --></script>
 
@@ -167,52 +179,52 @@ fieldset {
         <h1>You must have scripting enabled to use this page.</h1>
     </noscript>
 
-<fieldset ><legend>Secret Messages</legend>
+<fieldset class="secretMessages">
+<legend class="ui-widget">Secret Messages</legend>
 <input type="button" value="Load Secret Message 1" onclick="loadSecretMessage(0);" />
 <input type="button" value="Load Secret Message 2" onclick="loadSecretMessage(1);" />
 </fieldset>
 
 <!-- Cipher Text -->
-
-<fieldset class="ciphertext" style="display: inline-block; width: 45%">
-<legend>Cipher Text</legend>
+<fieldset class="ciphertext " >
+<legend class="ui-widget">Cipher Text</legend>
 <textarea id="ciphertext" style="width:100%; " rows="8">
 </textarea>
 </fieldset>
 
     
 <!-- Plain Text-->
-
 <fieldset class="plaintext sticky" >
-<legend id="outputLegend">Plain Text</legend>
+<legend id="outputLegend" class="ui-widget">Plain Text</legend>
 <textarea id="plaintext" style="width:100%; " rows="8"></textarea>
 </fieldset>
 
 
-<div id="log"></div>
-<fieldset id="shiftJsInitField" style="width: 95%; margin: 1em auto">
-<legend>[&ndash;] Shift (Caesar) Cipher</legend>
-<div
-><div class="instructions">Adjust the shift to align the ciphertext's most common letter with 
-    the English most common letter 'E'.</div>
-<div id="shiftJsInitContent"  ></div>
+<!-- Tabbed Interface for Ciphers -->
+<div id="cipherTabs">
+    <ul>
+        <li><a href="#cipherTab_Shift">Shift (Caesar) Cipher</a></li>
+        <li><a href="#cipherTab_Vigenere">Vigenere Cipher</a></li>
+    </ul>
+    <div id="cipherTab_Shift">
+        <div>
+            <div class="instructions">Instructions: Adjust the shift to align the ciphertext's most common letter with 
+            the English most common letter 'E'.</div>
+            <div id="shiftContent"  ></div>
+        </div>
+    </div>
+    <div id="cipherTab_Vigenere">
+        <div>
+            <div class="instructions">
+                Instructions: First add letters to the key until dot products exhibit a clear spike at one letter.
+                Then adjust each shift to align the ciphertext's most common letter 
+                with the English most common letter 'E'.
+            </div>
+            <div id="vigenereContent"  ></div>
+        </div>
+    </div>
 </div>
-</fieldset>
 
-
-<!-- Vigenere Square -->
-<fieldset id="viginereFieldset" style="width: 95%; margin: 1em auto">
-<legend>[&ndash;] Vigenere Cipher</legend>
-<div>
-<div class="instructions">
-    First add letters to the key until dot products exhibit a clear spike at one letter.
-    Then adjust each shift to align the ciphertext's most common letter 
-    with the English most common letter 'E'.</div>
-<div id="vigenereContent"  ></div>
-</div>
-</fieldset>
-    
-    
     
     
 </body>
