@@ -516,9 +516,15 @@ var ShiftCipher = {
                     floating: true,
                     shadow: true
                 },
+                tooltip: {
+                    enabled: false,
+                    shared: true,
+                    valueDecimals: 0,
+                    pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>{point.y}%</b>\u00a0\u00a0<br/>'
+                },
                 series: [{
                     name: 'English',
-                    data: this.ENGLISH_FREQUENCIES,
+                    data: this.ENGLISH_FREQUENCIES.map(function(x){return x*100;}),
                     pointPadding: -0.3
                 }, {
                     name: 'Ciphertext',
@@ -572,6 +578,7 @@ var ShiftCipher = {
                     shadow: true
                 },
                 tooltip: {
+                    enabled: false,
                     shared: true
                 },
                 series: [{
@@ -597,7 +604,7 @@ var ShiftCipher = {
                 if( shiftedFreqs == null ){
                     This._freqChart.series[1].setData([]);
                 } else {
-                    This._freqChart.series[1].setData(shiftedFreqs);
+                    This._freqChart.series[1].setData(shiftedFreqs.map(function(x){return x*100;}));
 
                 }
             }

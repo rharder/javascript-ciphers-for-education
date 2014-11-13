@@ -1,13 +1,14 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<meta charset="UTF-8" />
 <title>Javascript (De)Ciphers for Education</title>
 <link href="js/libs/jquery-ui-1.11.2/jquery-ui.css" rel='stylesheet' type='text/css' />
 <link href="js/libs/jquery-ui-1.11.2/themes/overcast/theme.css" rel='stylesheet' type='text/css' />
 <script src="js/libs/jquery/jquery.js"></script>
 <script src="js/libs/jquery-ui-1.11.2/jquery-ui.js"></script>
 <script src="js/libs/highcharts/highcharts.js"></script>
-<script src="js/jquery.hc-sticky.min.js"></script>
+<script src="js/jquery.hc-sticky-min.js"></script>
 <script src="js/jquery.animate-shadow-min.js"></script>
 <script src="js/shift.js"></script>
 <script src="js/vigenere.js"></script>
@@ -54,6 +55,13 @@ function pageInit(){
     $(function(){
       $('legend').on('click',function(){
        $(this).siblings().slideToggle("slow");
+       var oldVal = $(this).text();
+       if( oldVal.indexOf('[\u2013]') == 0 ){ // EN-Dash
+         $(this).text( oldVal.replace(/\[–\]/, '[+]') );
+       } else {
+         $(this).text( oldVal.replace(/\[\+\]/, '[\u2013]') );
+       }
+       
       });
     });
     
@@ -179,7 +187,7 @@ fieldset {
 
 <div id="log"></div>
 <fieldset id="shiftJsInitField" style="width: 95%; margin: 1em auto">
-<legend>Shift (Caesar) Cipher</legend>
+<legend>[&ndash;] Shift (Caesar) Cipher</legend>
 <div
 ><div class="instructions">Adjust the shift to align the ciphertext's most common letter with 
     the English most common letter 'E'.</div>
@@ -190,7 +198,7 @@ fieldset {
 
 <!-- Vigenere Square -->
 <fieldset id="viginereFieldset" style="width: 95%; margin: 1em auto">
-<legend>Vigenere Cipher</legend>
+<legend>[&ndash;] Vigenere Cipher</legend>
 <div>
 <div class="instructions">
     First add letters to the key until dot products exhibit a clear spike at one letter.
