@@ -40,15 +40,20 @@ div.shift div.controls .slider {width:85%; margin: 0.5em auto }
 
 /* ********  L O C A L   F U N C T I O N S  ******** */
 
+// Init on page load
+$( document ).ready(function() {
+    pageInit();
+});
+
 
 function pageInit(){
     
-    pageJsInitShiftCipher( shiftCipherJs, 'shiftJsInitContent');
+    pageInitShiftCipher( shiftCipher, 'shiftContent');
     pageInitVigenereCipher(vigenereCipher, 'vigenereContent');
     
     $('fieldset.plaintext').hcSticky({
         onStart: function(){
-            
+            // would like some kind of shadow effect here
         },
         onStop: function(){
         }
@@ -60,6 +65,8 @@ function pageInit(){
     $(function(){
       $('legend').on('click',function(){
        $(this).siblings().slideToggle("slow");
+       
+       // Some legends have [-] or [+] in their title
        var oldVal = $(this).text();
        if( oldVal.indexOf('[\u2013]') == 0 ){ // EN-Dash
          $(this).text( oldVal.replace(/\[–\]/, '[+]') );
@@ -70,15 +77,14 @@ function pageInit(){
       });
     });
     
-    //loadSecretMessage(0);
+    loadSecretMessage(0);  // Pre-load a message
 }   // end pageInit
 
 
-var shiftCipher    = Object.create( ShiftCipher );
-var shiftCipherJs  = Object.create( ShiftCipher );
-var shiftCipherJs2 = Object.create( ShiftCipher );
+var shiftCipher  = Object.create( ShiftCipher );
+var vigenereCipher = Object.create( VigenereCipher );
 
-function pageJsInitShiftCipher( cipher, elId){
+function pageInitShiftCipher( cipher, elId){
     cipher.init( elId );
     
     // Respond to changes to the ciphertext
@@ -97,7 +103,6 @@ function pageJsInitShiftCipher( cipher, elId){
   
 }   // end pageInitShiftCipher
 
-var vigenereCipher = Object.create( VigenereCipher );
 function pageInitVigenereCipher( cipher, elId){
     cipher.init( elId );
     
@@ -144,14 +149,8 @@ function loadSecretMessage( index ){
     var text = _secretMessages[index];
     var el = document.getElementById('ciphertext');
     el.value = text;
-    //$('#ciphertext').html( text ); // Oddly, this doesn't work after manual input into textarea
     $('#ciphertext').trigger('propertychange');
 }
-
-// Init on page load
-$( document ).ready(function() {
-    pageInit();
-});
 
 // --></script>
 
@@ -196,7 +195,7 @@ fieldset {
 <div
 ><div class="instructions">Adjust the shift to align the ciphertext's most common letter with 
     the English most common letter 'E'.</div>
-<div id="shiftJsInitContent"  ></div>
+<div id="shiftContent"  ></div>
 </div>
 </fieldset>
 

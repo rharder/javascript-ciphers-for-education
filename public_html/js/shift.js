@@ -97,6 +97,7 @@ var ShiftCipher = {
             
             This._controlsTitleDiv.innerHTML = "Original Shift";
         
+            // Shift: Alpha
             var shiftAlphaId = 'shiftAlpha_' + this.generateUUID();
             This._shiftAlphaInput.setAttribute('type', 'text');
             This._shiftAlphaInput.setAttribute('class', 'shiftAlpha');
@@ -113,6 +114,7 @@ var ShiftCipher = {
             });
             This._shiftAlphaInput.setAttribute('value', String.fromCharCode( This.originalShift+65 ) );
             
+            // Shift: Numeric
             var shiftNumId = 'shiftNum_' + this.generateUUID();
             This._shiftNumInput.setAttribute('type', 'text');
             This._shiftNumInput.setAttribute('class', 'shiftNum');
@@ -123,6 +125,7 @@ var ShiftCipher = {
             });
             This._shiftNumInput.setAttribute('value', This.originalShift );
             
+            // Shift: Slider
             var sliderId = 'shiftSlider_' + this.generateUUID();
             This._sliderDiv.setAttribute('class', 'slider');
             This._sliderDiv.setAttribute('id', sliderId);
@@ -133,13 +136,15 @@ var ShiftCipher = {
                 }
               });
               
+              // Guess
               var guessId = 'guess_' + this.generateUUID();
               This._guessBtn.setAttribute('type', 'button');
-              This._guessBtn.setAttribute('value', 'Guess');
+              This._guessBtn.setAttribute('value', 'Max Dot Product');
               $( This._guessBtn ).on('click',function(){
                   This.guess();
               });
 
+            // 
             this.addEventListener('originalShiftChanged',function(src){
                 $.Deferred(function(){
                     var shift = src.originalShift;
