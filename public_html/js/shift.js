@@ -80,7 +80,8 @@ var ShiftCipher = {
             This._shiftDiv.appendChild(This._dotDiv);
             
         // Out shift div
-        This._shiftDiv.setAttribute('class', 'shift');
+        This._shiftDiv.setAttribute('class', 'shift jquery-shadow jquery-shadow-standard');
+        //$(This._shiftDiv).shadow();
         
         // Controls
         This._controlsDiv.setAttribute('class', 'controls');
