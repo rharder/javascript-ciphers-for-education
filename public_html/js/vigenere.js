@@ -38,7 +38,7 @@ var VigenereCipher = {
         var This = this;
         This._container = document.getElementById( domID );
             This._controlsDiv = document.createElement('div');
-            This._controlsDiv.setAttribute('class','vigenere');
+            This._controlsDiv.setAttribute('class','vigenere_controls');
             This._controlsDiv.innerHTML = 'Key: ';
             
             this._keyInput = document.createElement('input');
