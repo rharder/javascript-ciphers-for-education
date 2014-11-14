@@ -33,6 +33,7 @@ var VigenereCipher = {
     _keyLengthChartDiv : null,
     _keyLengthChart : null,
     _shiftDivsContainer : null,
+    _guessBtn: null,
     
     
     init : function( domID ){
@@ -53,6 +54,7 @@ var VigenereCipher = {
                         This._keyInput = document.createElement('input');
                         This._keyLengthTitleDiv = document.createElement('div');
                         This._keyLengthInput = document.createElement('input');
+                        This._guessBtn        = document.createElement('input');
                     This._keyLengthChartDiv = document.createElement('div');
                 This._shiftDivsContainer = document.createElement('div');
             
@@ -65,6 +67,8 @@ var VigenereCipher = {
                     This._keyLengthControlsDiv.appendChild( This._keyInput );
                     This._keyLengthControlsDiv.appendChild( This._keyLengthTitleDiv );
                     This._keyLengthControlsDiv.appendChild( This._keyLengthInput );
+                    //This._keyLengthControlsDiv.appendChild( document.createElement('div') );
+                    //This._keyLengthControlsDiv.appendChild( This._guessBtn );
                 This._keyLengthDiv.appendChild( This._keyLengthChartDiv );
             This._vigDiv.appendChild( This._shiftDivsContainer );
             
@@ -99,6 +103,14 @@ var VigenereCipher = {
         });
         This._keyLengthInput.setAttribute('value', This.keyLength );
 
+        // Guess
+        var guessId = 'guess_' + this.generateUUID();
+        This._guessBtn.setAttribute('type', 'button');
+        This._guessBtn.setAttribute('value', 'Guess Keys');
+        $( This._guessBtn ).on('click',function(){
+            This.guess();
+        });
+
         // Chart
         var keyLengthChartId = 'keyLengthChart_' + this.generateUUID();
         This._keyLengthChartDiv.setAttribute('class', 'keyLengthChart chart');
@@ -119,6 +131,12 @@ var VigenereCipher = {
         return uuid;
     },
     
+    
+    guess : function(animate){
+        this._shiftCiphers.map( function( cipher ){
+                cipher.guess(animate);
+            } );
+    },
     
     
     get cipherText() { return this._cipherText; },
