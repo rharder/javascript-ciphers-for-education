@@ -31,6 +31,7 @@ var ShiftCipher = {
     _listeners : null,
     _suspendUpdates : false,
     _toUpdate : null,
+    _animateGuess : true,
     
     // HTML elements
     _container : null,
@@ -80,7 +81,8 @@ var ShiftCipher = {
             This._shiftDiv.appendChild(This._dotDiv);
             
         // Out shift div
-        This._shiftDiv.setAttribute('class', 'shift');
+        This._shiftDiv.setAttribute('class', 'shift jquery-shadow jquery-shadow-standard');
+        //$(This._shiftDiv).shadow();
         
         // Controls
         This._controlsDiv.setAttribute('class', 'controls');
@@ -280,6 +282,7 @@ var ShiftCipher = {
             This._stepStart = start;
             This._plainTextCache = {}; // Clear cached deciphered contents
             This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText, This.stepStart, This.step );
+            
             This.updateFrequencyChart();
             This.updateDotProductChart();
             This.fireEvent( "stepStartChanged" );
@@ -302,6 +305,7 @@ var ShiftCipher = {
             This._step = step;
             This._plainTextCache = {}; // Clear cached deciphered contents
             This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText, This.stepStart, This.step );
+            
             This.updateFrequencyChart();
             This.updateDotProductChart();
             This.fireEvent( "stepChanged" );
@@ -330,6 +334,26 @@ var ShiftCipher = {
         //});
     },
     
+/*
+    setStepStartShift : function( step, start, shift ){
+        var This = this;
+        This._step = step;
+        This._stepStart = start;
+        This._originalShift = shift;
+        This._plainTextCache = {}; // Clear cached deciphered contents
+        This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText, start, step );
+            
+        This.updateFrequencyChart();
+        This.updateDotProductChart('shift');
+       
+        This.fireEvent( "stepChanged" );
+        This.fireEvent( "stepStartChanged" );
+        //This.fireEvent( "originalShiftChanged" ); // Infinite loop
+        This.fireEvent( "plainTextChanged" );
+        
+    },
+*/
+    
     get plainText() {
         return this.getPlainText( this.originalShift );
     },
@@ -350,7 +374,8 @@ var ShiftCipher = {
     
     
     // Automatically (try to) decipher
-    guess : function(){
+    _guessAnimationVals: null,
+    guess : function(animate){
         var indexOfMax = 0;
         var dots = this.dotProductCoincidence;
         for( var i = 0; i < dots.length; i++ ){
@@ -359,7 +384,29 @@ var ShiftCipher = {
             }
         }
         // How far is max from the letter 'e'?
+        var This = this;
+        if( (animate == null && This._animateGuess === true) || (animate === true) ){
+            This._guessAnimationVals = [indexOfMax];
+            if( This.originalShift < indexOfMax ){
+                for( var i = indexOfMax; i > This.originalShift; i-=2 ){
+                    This._guessAnimationVals.push(i);
+                }
+            } else if( This.originalShift > indexOfMax ){
+                for( var i = indexOfMax; i < This.originalShift; i+=2 ){
+                    This._guessAnimationVals.push(i);
+                }
+            }
+            var animateFunc = function(){
+                var x = This._guessAnimationVals.pop();
+                This.originalShift = x;
+                if( This._guessAnimationVals.length > 0 ){
+                    setTimeout(animateFunc,Math.floor(Math.random()*3));
+                }
+            };
+            setTimeout(animateFunc,0);
+        } else {
         this.originalShift = indexOfMax;//(26 + indexOfMax - 4) % 26;
+        }
     },
 
     /**

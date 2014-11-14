@@ -22,41 +22,101 @@ var VigenereCipher = {
     
     // HTML elements
     _container : null,
-    _controlsDiv : null,
+    _vigDiv : null,
+    _keyLengthDiv : null,
+    _keyLengthControlsDiv : null,
+    _controlsTitleDiv : null,
+    _keyInputTitleDiv : null,
     _keyInput : null,
+    _keyLengthTitleDiv : null,
+    _keyLengthInput : null,
+    _keyLengthChartDiv : null,
+    _keyLengthChart : null,
     _shiftDivsContainer : null,
+    _guessBtn: null,
     
     
     init : function( domID ){
+        var This = this;
         this._listeners = {};
         this._plainTextCache = {};
         this._shiftCiphers = [];
         this._shiftDivs = [];
         this._shiftCipherDivs = [];
         
-        
-        var This = this;
+        // Get/Create
         This._container = document.getElementById( domID );
-            This._controlsDiv = document.createElement('div');
-            This._controlsDiv.setAttribute('class','vigenere');
-            This._controlsDiv.innerHTML = 'Key: ';
+            This._vigDiv = document.createElement('div');
+                This._keyLengthDiv = document.createElement('div');
+                    This._keyLengthControlsDiv = document.createElement('div');
+                        This._controlsTitleDiv = document.createElement('div');
+                        This._keyInputTitleDiv = document.createElement('div');
+                        This._keyInput = document.createElement('input');
+                        This._keyLengthTitleDiv = document.createElement('div');
+                        This._keyLengthInput = document.createElement('input');
+                        This._guessBtn        = document.createElement('input');
+                    This._keyLengthChartDiv = document.createElement('div');
+                This._shiftDivsContainer = document.createElement('div');
             
-            this._keyInput = document.createElement('input');
-                var keyInputId = 'keyInput_' + This.generateUUID();
-                This._keyInput.setAttribute('type', 'text');
-                This._keyInput.setAttribute('class', 'vigKey');
-                This._keyInput.setAttribute('id', keyInputId);
-                $(This._keyInput).on('input propertychange paste',function(){
-                    This.key = $(this).val();
-                });
-                This._keyInput.setAttribute('value', This.key );
+        // Append
+        This._container.appendChild( This._vigDiv );
+            This._vigDiv.appendChild( This._keyLengthDiv );        
+                This._keyLengthDiv.appendChild( This._keyLengthControlsDiv );
+                    This._keyLengthControlsDiv.appendChild( This._controlsTitleDiv );
+                    This._keyLengthControlsDiv.appendChild( This._keyInputTitleDiv );
+                    This._keyLengthControlsDiv.appendChild( This._keyInput );
+                    This._keyLengthControlsDiv.appendChild( This._keyLengthTitleDiv );
+                    This._keyLengthControlsDiv.appendChild( This._keyLengthInput );
+                    //This._keyLengthControlsDiv.appendChild( document.createElement('div') );
+                    //This._keyLengthControlsDiv.appendChild( This._guessBtn );
+                This._keyLengthDiv.appendChild( This._keyLengthChartDiv );
+            This._vigDiv.appendChild( This._shiftDivsContainer );
             
-            
-            This._shiftDivsContainer = document.createElement('div');
-            This._container.appendChild( This._controlsDiv );
-                This._controlsDiv.appendChild( This._keyInput );
-            This._container.appendChild( This._shiftDivsContainer );
+        // Outer Vig
+        This._vigDiv.setAttribute('class','vigenere');
         
+        // Left most controls
+        This._keyLengthDiv.setAttribute('class','keyLength jquery-shadow jquery-shadow-standard');
+        This._keyLengthControlsDiv.setAttribute('class','keyLengthControls controls');
+        This._keyInputTitleDiv.innerHTML = "Key";
+        This._keyLengthTitleDiv.innerHTML = "Length";
+
+        // Key
+        var keyInputId = 'keyInput_' + This.generateUUID();
+        This._keyInput.setAttribute('type', 'text');
+        This._keyInput.setAttribute('class', 'vigKey');
+        This._keyInput.setAttribute('size', 6);
+        This._keyInput.setAttribute('id', keyInputId);
+        $(This._keyInput).on('input propertychange paste',function(){
+            This.key = $(this).val();
+        });
+        This._keyInput.setAttribute('value', This.key );
+        
+        // Key Length
+        var keyLengthInputId = 'keyLengthInput_' + This.generateUUID();
+        This._keyLengthInput.setAttribute('type', 'text');
+        This._keyLengthInput.setAttribute('class', 'vigKeyLength');
+        This._keyLengthInput.setAttribute('size', 2);
+        This._keyLengthInput.setAttribute('id', keyLengthInputId);
+        $(This._keyLengthInput).on('input propertychange paste',function(){
+            This.keyLength = $(this).val();
+        });
+        This._keyLengthInput.setAttribute('value', This.keyLength );
+
+        // Guess
+        var guessId = 'guess_' + this.generateUUID();
+        This._guessBtn.setAttribute('type', 'button');
+        This._guessBtn.setAttribute('value', 'Guess Keys');
+        $( This._guessBtn ).on('click',function(){
+            This.guess();
+        });
+
+        // Chart
+        var keyLengthChartId = 'keyLengthChart_' + this.generateUUID();
+        This._keyLengthChartDiv.setAttribute('class', 'keyLengthChart chart');
+        This._keyLengthChartDiv.setAttribute('id', keyLengthChartId);
+        This.initKeyLengthChart(keyLengthChartId);
+
         
         this.key = 'A';
     },
@@ -72,6 +132,12 @@ var VigenereCipher = {
     },
     
     
+    guess : function(animate){
+        this._shiftCiphers.map( function( cipher ){
+                cipher.guess(animate);
+            } );
+    },
+    
     
     get cipherText() { return this._cipherText; },
     set cipherText ( text ){
@@ -83,6 +149,7 @@ var VigenereCipher = {
             this._shiftCiphers.map( function( cipher ){
                 cipher.cipherText = text;
             } );
+            This.updateKeyLengthChart();
             This.fireEvent( "cipherTextChanged", This );
             This.fireEvent( "plainTextChanged", This );
         //});
@@ -104,7 +171,10 @@ var VigenereCipher = {
             }
         }
         this._key = preppedKey;
+        
+        // Update UI
         $(this._keyInput).val(this._key );
+        $(this._keyLengthInput).val(this.keyLength );
         
         // Make sure there's a shift cipher for each character in key
         var This = this;
@@ -120,7 +190,7 @@ var VigenereCipher = {
                     cipherDiv.setAttribute('class', 'shift');
                 
                 cipher.init( cipherId );
-                cipher._controlsTitleDiv.innerHTML = "Key Char " + (i+1);
+                cipher._controlsTitleDiv.innerHTML = "Key Position " + (i+1);
                 cipher.step = preppedKey.length;
                 cipher.stepStart = i;
                 cipher.cipherText = this.cipherText;
@@ -141,11 +211,12 @@ var VigenereCipher = {
             }
         } else if( preppedKey.length < this._shiftCiphers.length ){ // Remove ciphers
             while( preppedKey.length < this._shiftCiphers.length ){
-                var cipher = this._shiftCiphers.pop();
-                cipher._vig_removeVigenereListener();
-                var cipherDiv = this._shiftCipherDivs.pop();
-                this._shiftDivsContainer.removeChild( cipherDiv );
-                
+                $.Deferred(function(){
+                    var cipher = This._shiftCiphers.pop();
+                    cipher._vig_removeVigenereListener();
+                    var cipherDiv = This._shiftCipherDivs.pop();
+                    This._shiftDivsContainer.removeChild( cipherDiv );
+                });
             }
         }
         
@@ -153,6 +224,7 @@ var VigenereCipher = {
             for( var i = 0; i < preppedKey.length; i++ ){
                 var x = i;
                 This._shiftCiphers[i].batch(function(){
+                    //This._shiftCiphers[x].setStepStartShift( preppedKey.length, x, preppedKey.charCodeAt(x) - 65);
                     This._shiftCiphers[x].step = preppedKey.length;
                     This._shiftCiphers[x].stepStart = x;
                     This._shiftCiphers[x].originalShift = preppedKey.charCodeAt(x) - 65;
@@ -161,16 +233,15 @@ var VigenereCipher = {
         //} 
         
         
-        var This = this;
         //$.Deferred(function(){
-            //This.updateChart();
+            This.updateKeyLengthChart('keyLength');
             This.fireEvent( "keyChanged", This );
             This.fireEvent( "plainTextChanged", This );
         //});
     },
 
 
-    get keyLength(){ return this.key.length; },
+    get keyLength(){ return this.key == null ? 0 : this.key.length; },
     set keyLength( len ){
         if( len > this.key.length ){
             var newKey = this.key;
@@ -181,6 +252,7 @@ var VigenereCipher = {
         } else {
             this.key = this.key.substring( 0, len );
         }
+        $(this._keyLengthInput).val(this.keyLength );
     },
 
     
@@ -217,6 +289,139 @@ var VigenereCipher = {
     },
     
     
+    /**
+     * For assisting in guessing key length, shift the
+     * cipher text and count how often there's a match
+     * between the original array and the shifted one.
+     * @returns {undefined}
+     */
+    calculateMatches : function(){
+        var text = this.extractAlphaUpper( this.cipherText );
+        var freqs = [];
+        var textLength = text.length;
+        for( var shift = 1; shift < 22; shift++ ){
+            freqs[shift-1] = 0;
+            for( var i = 0; i < textLength-shift; i++ ){
+                if( text.charAt(i) === text.charAt(i+shift) ){
+                    freqs[shift-1]++;
+                }
+            }
+        }
+        return freqs;
+    },
+    
+    /**
+     * Extracts the alpha characters from the cipher text
+     * and ensures they are all uppercase.
+     * @returns {undefined}
+     */
+    extractAlphaUpper : function(text){
+        var out = '';
+        var textLength = text.length;
+        var c;
+        for( var i = 0; i < textLength; i++ ){
+            c = text.charCodeAt(i);
+            if( c >= 65 && c <= 90 ){ // UPPER
+                out += String.fromCharCode(c);
+            } else if( c >= 97 && c <= 122 ){ // lower, make upper
+                out += String.fromCharCode( c - 32 );
+            }
+        }
+        return out;
+    },
+    
+    
+    
+    initKeyLengthChart : function( containerID ){
+        var xCat = [];
+        for( var i = 0; i < 19; i++ ){
+            xCat[i] = i+1;
+        }
+        if( this._keyLengthChart == null ){
+            
+            this._keyLengthChart = new Highcharts.Chart({
+                chart: {
+                    renderTo: containerID,
+                    type: 'column'
+                },
+                colors: ['#777777', '#dd1111'],
+                plotOptions: {
+                                column: {
+                                    grouping: false,
+                                    shadow: false
+                                },
+                                dataLabels: { enabled: true },
+                                series: { marker: { enabled: false } }
+                            },
+                title: {
+                    text: null//'Frequency Analysis'
+                },
+                xAxis: {
+                    //categories: ShiftCipher.ALPHABET_UPPER
+                    categories: xCat,
+                    max: 20
+                },
+                yAxis: {
+                    title: {text: 'Matches'},
+                    labels: {enabled: false}
+                },
+                legend: {
+                    layout: 'vertical',
+                    backgroundColor: '#FFFFFF',
+                    align: 'right',
+                    verticalAlign: 'top',
+                    x: -5,
+                    y: 5,
+                    floating: true,
+                    shadow: true
+                },
+                tooltip: {
+                    enabled: false,
+                    shared: true
+                },
+                series: [{
+                    name: 'Shift Matches',
+                    type: 'line',
+                    //data: this.ENGLISH_FREQUENCIES,
+                    pointPadding: -0.3
+                }, {
+                    name: 'Key Length',
+                    type: 'column',
+                    pointPadding: 0.1
+                }]
+            });
+        } 
+    },
+    
+    
+    
+    
+    updateKeyLengthChart : function(toUpdate){
+        var This = this;
+        var func = function(){
+            //var dots = This.dotProductCoincidence;
+            var matches = This.calculateMatches();
+            if( toUpdate == null || toUpdate === 'matches' ){
+                //This._dotChart.series[0].setData( dots == null ? [] : dots );
+                This._keyLengthChart.series[0].setData( matches == null ? [] : matches );
+            }
+            if( toUpdate == null || toUpdate === 'keyLength' ){
+                var lengthMarker = [];
+                for( var i = 0; i < 26; i++ ){
+                    lengthMarker[i] = 0;
+                }
+                lengthMarker[ This.keyLength-1 ] = matches[ This.keyLength-1 ];
+                if( This._keyLengthChart != null ){
+                    This._keyLengthChart.series[1].setData( lengthMarker == null ? [] : lengthMarker );
+                }
+            }
+        };
+        if( This._suspendUpdates ){
+            This._toUpdate['updateKeyLengthChart'] = func;
+        } else {
+            func();
+        }
+    },
     
     addEventListener : function( eventType, callback ){
         if( this._listeners == null ){
