@@ -280,6 +280,7 @@ var ShiftCipher = {
             This._stepStart = start;
             This._plainTextCache = {}; // Clear cached deciphered contents
             This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText, This.stepStart, This.step );
+            
             This.updateFrequencyChart();
             This.updateDotProductChart();
             This.fireEvent( "stepStartChanged" );
@@ -302,6 +303,7 @@ var ShiftCipher = {
             This._step = step;
             This._plainTextCache = {}; // Clear cached deciphered contents
             This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText, This.stepStart, This.step );
+            
             This.updateFrequencyChart();
             This.updateDotProductChart();
             This.fireEvent( "stepChanged" );
@@ -329,6 +331,26 @@ var ShiftCipher = {
             This.fireEvent( "plainTextChanged" );
         //});
     },
+    
+/*
+    setStepStartShift : function( step, start, shift ){
+        var This = this;
+        This._step = step;
+        This._stepStart = start;
+        This._originalShift = shift;
+        This._plainTextCache = {}; // Clear cached deciphered contents
+        This.paddedFrequencies = This.frequenciesPaddedAlphabet( This.cipherText, start, step );
+            
+        This.updateFrequencyChart();
+        This.updateDotProductChart('shift');
+       
+        This.fireEvent( "stepChanged" );
+        This.fireEvent( "stepStartChanged" );
+        //This.fireEvent( "originalShiftChanged" ); // Infinite loop
+        This.fireEvent( "plainTextChanged" );
+        
+    },
+*/
     
     get plainText() {
         return this.getPlainText( this.originalShift );

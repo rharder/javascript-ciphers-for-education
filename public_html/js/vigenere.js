@@ -45,6 +45,7 @@ var VigenereCipher = {
                 var keyInputId = 'keyInput_' + This.generateUUID();
                 This._keyInput.setAttribute('type', 'text');
                 This._keyInput.setAttribute('class', 'vigKey');
+                This._keyInput.setAttribute('size', 10);
                 This._keyInput.setAttribute('id', keyInputId);
                 $(This._keyInput).on('input propertychange paste',function(){
                     This.key = $(this).val();
@@ -153,6 +154,7 @@ var VigenereCipher = {
             for( var i = 0; i < preppedKey.length; i++ ){
                 var x = i;
                 This._shiftCiphers[i].batch(function(){
+                    //This._shiftCiphers[x].setStepStartShift( preppedKey.length, x, preppedKey.charCodeAt(x) - 65);
                     This._shiftCiphers[x].step = preppedKey.length;
                     This._shiftCiphers[x].stepStart = x;
                     This._shiftCiphers[x].originalShift = preppedKey.charCodeAt(x) - 65;
