@@ -292,6 +292,49 @@ var VigenereCipher = {
         return freqs;
     },
     
+    //TODO left off here
+    calculateSumOfSquares : function() {
+        var text = this.extractAlphaUpper( this.cipherText );
+        var freqs = [];
+        var squares = [];
+        var squaresAvg = [];
+        
+        for( var keyLengthI = 0; keyLengthI = 5; keyLengthI++ ){
+            freqs[keyLengthI] = [];
+            var totalForAvg = 0;
+            
+            for( var keyPos = 0; keyPos <= keyLengthI; keyPos++ ){
+                squares[keyLengthI] = [];
+                
+                // Calculate frequencies
+                freqs[keyLengthI][keyPos] = ShiftCipher.frequenciesCountChars(text,keyPos,keyLengthI+1);
+                
+                // Find max; assume it's 'E'
+                var freqLength = freqs[keyLengthI][keyPos].length;
+                var indexOfMax = 0;
+                for( var i = 0; i < freqLength; i++ ){
+                    if( freqs[keyLengthI][keyPos][i] > freqs[keyLengthI][keyPos][indexOfMax] ){
+                        indexOfMax = i;
+                    }   // end if: new max
+                }   // end for: each letter
+                
+                var sum = 0;
+                for( var i = 0; i < freqLength; i++ ){
+                    var diff = ShiftCipher.ENGLISH_FREQUENCIES[i] - freqs[keyLengthI][keyPos][(i+22)%freqLength];
+                    sum += diff*diff;
+                }   // end for: each letter
+                squares[keyLengthI][keyPos] = sum;
+                totalForAvg += sum;
+            }   // end for: each key position
+            
+            squaresAvg[keyLengthI] = totalForAvg / (keyLengthI+1);
+            
+        }   // end for: each key length
+        
+         
+        return squaresAvg;
+    },
+    
     /**
      * Extracts the alpha characters from the cipher text
      * and ensures they are all uppercase.
@@ -377,22 +420,29 @@ var VigenereCipher = {
     
     
     
-    
     updateKeyLengthChart : function(toUpdate){
         var This = this;
         var func = function(){
             //var dots = This.dotProductCoincidence;
-            var matches = This.calculateMatches();
+            //var matches = This.calculateMatches();
+            var ss = null;
             if( toUpdate == null || toUpdate === 'matches' ){
                 //This._dotChart.series[0].setData( dots == null ? [] : dots );
-                This._keyLengthChart.series[0].setData( matches == null ? [] : matches );
+                //This._keyLengthChart.series[0].setData( matches == null ? [] : matches );
+            }
+            if( toUpdate == null || toUpdate === 'sumSquares' ){
+                ss = This.calculateSumOfSquares();
+                This._keyLengthChart.series[0].setData( ss == null ? [] : ss );
             }
             if( toUpdate == null || toUpdate === 'keyLength' ){
+                if( ss == null ) {
+                    ss = This.calculateSumOfSquares();
+                }
                 var lengthMarker = [];
-                for( var i = 0; i < 26; i++ ){
+                for( var i = 0; i < ss.length; i++ ){
                     lengthMarker[i] = 0;
                 }
-                lengthMarker[ This.keyLength-1 ] = matches[ This.keyLength-1 ];
+                lengthMarker[ This.keyLength-1 ] = ss[ This.keyLength-1 ];
                 if( This._keyLengthChart != null ){
                     This._keyLengthChart.series[1].setData( lengthMarker == null ? [] : lengthMarker );
                 }
