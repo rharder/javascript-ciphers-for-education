@@ -293,7 +293,8 @@ var VigenereCipher = {
     },
     
     //TODO left off here
-    calculateSumOfSquares : function() {
+    calculateSumOfSquaresZ : function() {
+        return [1,2,1];
         var text = this.extractAlphaUpper( this.cipherText );
         var freqs = [];
         var squares = [];
@@ -309,7 +310,7 @@ var VigenereCipher = {
                 // Calculate frequencies
                 freqs[keyLengthI][keyPos] = ShiftCipher.frequenciesCountChars(text,keyPos,keyLengthI+1);
                 
-                // Find max; assume it's 'E'
+                // Find max; assume it equates to 'E'
                 var freqLength = freqs[keyLengthI][keyPos].length;
                 var indexOfMax = 0;
                 for( var i = 0; i < freqLength; i++ ){
@@ -334,6 +335,40 @@ var VigenereCipher = {
          
         return squaresAvg;
     },
+    
+    
+    calculateSumOfSquares : function(){
+        var sumSquaresByKeyLength = []; // Zero index is key length one
+        var text = this.cipherText;
+        
+        // Go through each key length
+        for( var keyLengthI = 0; keyLengthI < 20; keyLengthI++ ){
+            
+            // Calc and average sumSquares for each character in the key
+            var totalForAvg = 0;
+            for( var keyPosI = 0; keyPosI <= keyLengthI; keyPosI++ ){
+                var rawCount     = ShiftCipher.frequenciesCountChars(text,keyPosI,keyLengthI+1);
+                var paddedFreqs  = ShiftCipher.padFrequencies( rawCount );
+                var alignedFreqs = ShiftCipher.alignToE( paddedFreqs );
+                
+                // Calc the differences and square them
+                var freqLength = alignedFreqs.length;
+                var sumSquares = 0;
+                var diff;
+                for( var i = 0; i < freqLength; i++ ){
+                    diff = alignedFreqs[i] - ShiftCipher.ENGLISH_FREQUENCIES[i];
+                    sumSquares += diff*diff;
+                }
+                totalForAvg += sumSquares;
+                
+            }   // end for: key pos
+            sumSquaresByKeyLength[keyLengthI] = 1/(totalForAvg / (keyLengthI + 1));
+        }   // end for: each keylength
+        
+        return sumSquaresByKeyLength;
+    },
+    
+    
     
     /**
      * Extracts the alpha characters from the cipher text
@@ -405,10 +440,8 @@ var VigenereCipher = {
                     shared: true
                 },
                 series: [{
-                    name: 'Shift Matches',
-                    type: 'line',
-                    //data: this.ENGLISH_FREQUENCIES,
-                    pointPadding: -0.3
+                    name: 'Sum of Squares',
+                    type: 'line'
                 }, {
                     name: 'Key Length',
                     type: 'column',
