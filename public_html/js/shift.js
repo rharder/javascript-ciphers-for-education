@@ -31,6 +31,7 @@ var ShiftCipher = {
     _listeners : null,
     _suspendUpdates : false,
     _toUpdate : null,
+    _animateGuess : true,
     
     // HTML elements
     _container : null,
@@ -373,7 +374,8 @@ var ShiftCipher = {
     
     
     // Automatically (try to) decipher
-    guess : function(){
+    _guessAnimationVals: null,
+    guess : function(animate){
         var indexOfMax = 0;
         var dots = this.dotProductCoincidence;
         for( var i = 0; i < dots.length; i++ ){
@@ -382,7 +384,29 @@ var ShiftCipher = {
             }
         }
         // How far is max from the letter 'e'?
+        var This = this;
+        if( (animate == null && This._animateGuess === true) || (animate === true) ){
+            This._guessAnimationVals = [indexOfMax];
+            if( This.originalShift < indexOfMax ){
+                for( var i = indexOfMax; i > This.originalShift; i-=2 ){
+                    This._guessAnimationVals.push(i);
+                }
+            } else if( This.originalShift > indexOfMax ){
+                for( var i = indexOfMax; i < This.originalShift; i+=2 ){
+                    This._guessAnimationVals.push(i);
+                }
+            }
+            var animateFunc = function(){
+                var x = This._guessAnimationVals.pop();
+                This.originalShift = x;
+                if( This._guessAnimationVals.length > 0 ){
+                    setTimeout(animateFunc,Math.floor(Math.random()*3));
+                }
+            };
+            setTimeout(animateFunc,0);
+        } else {
         this.originalShift = indexOfMax;//(26 + indexOfMax - 4) % 26;
+        }
     },
 
     /**

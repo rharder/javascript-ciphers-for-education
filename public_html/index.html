@@ -156,6 +156,7 @@ function pageInitVigenereCipher( cipher, elId){
 }   // end pageInitVigenereCipher
 
 var _secretMessages = [ 
+// Shift (18)
 "Gxx ow yg aflg lzw oadv tdmw qgfvwj,\n\
 Udaetafy zayz aflg lzw kmf\n\
 Zwjw lzwq ugew rggeafy lg ewwl gmj lzmfvwj\n\
@@ -165,6 +166,7 @@ Gxx oalz gfw zwddmns jgsj!\n\
 Ow danw af xsew gj yg vgof af xdsew. Zwq!\n\
 Fglzafy usf klgh lzw M.K. Saj Xgjuw!",
         
+// Vigenere: cadet (a=0)
 "qh, l ltxe vpbrphh mje vykny esgfs rj xcrwl, \n\
 tpd gegeeg xag snmxu oq ptwgkxxt-slpogrhh pknjw; \n\
 lwnzekf i'yi vnipfxf aqh cqiqiw vhh xnobomgi mlvmj oi wnp-sspbv cosnfs - \n\
@@ -177,7 +179,23 @@ i'yi mqpsiw vhh abpd-vaxrt kibihww pktk ituy jvtee, \n\
 zlxte qiogr oekm, ou iogn hezne, ipxy; \n\
 aqh, pjioi pktk wbneqx, ekfwmgi mlrw k'vh xkqd \n\
 wlx jijl nptuilravwxf sdrvviwc hh ssevg, \n\
-pxx hwt pc acng egf tryvjeg xag fdgx qf jsw."
+pxx hwt pc acng egf tryvjeg xag fdgx qf jsw.",
+        
+// Vigenere: beatnavy (a=1)        
+"  K fn ub Bidtndub gefjyjhu jj sjj gifdar ymjwv hqzti ns qpqmvwz ube ktt bbs cg hhhj. J ua qndrfsyr uk fkaf gm meeg no nvfeq fjgybta. \n\
+  H ynmf bfrdt xvlffjcgw pz az kvp ksys xekn. Ng cb dklofox, W xekn sfpss ottwfhrfn sjj nyacaqu tg gm dklofox kiekg yiym tphnq iujf pgg rfubt pn tjtcgu.\n\
+  Ee K fn woqpttje C kjhk etonwoqd vt sygjos dd bfz nazpx bpojhzdqf. C kjhk ofly swaqa jgzcsp sq jtwoqa zpi bcr ppggwt nc fobcuf. C kjhk chdydu jdkyiyf qwqqqf hcs ooghjuz gwuqwt zfpi sjj fhsnu.\n\
+  Hh N cyqpid c uscgpjdt tg qos, E vkqm esfl ecnub kjpg od gyzmkv rwjmcoaqu. N xczm chxj oi wobntrbnwpj mqw uuyf lzty jh oou zeyjib xdhem ncuip ag mblagqk vt ns qpiqcifm. Wg E zo xfhwpn, H ynmf hbgd etngooz. Hh spn W xekn tcym udd nfxzim kqfjsm cg pgqxf udqkhpyfx cwaq oj bhr xekn gbwy uddo zq cb frdtd xum.\n\
+  Xddp vvyguenpje, mvpqkf N cyqpid c uscgpjdt tg qos, E zo wfkijndf yp awwa mcrf, loog, rgwwcqf jtogfl, ooz ccyf it ceqvm. J qwmh dxfey ooovgwjhu gqqvmfl evarvnphg uk sjj vnapos qk ns ocekkyz. C kjhk ofly bp kqcq pl ksesvjo mhbpdojong eerntzuz uk la hpobunx cse cht wknnfm cs dztrgoz uk sjjjl qbqrg.\n\
+  N xczm jdxjs zcscdv yiuh J wl cs Bgssebcs, gcuiphpl gif gndgipg, ffooqstcpma eqw ns odphqst, ube zdfnduhfz sq yiy dsemenqfst sgkhi goea la hpobunx hwfy. W xekn ysogu em od Hir bjc ks ubs Vjhvje Mhbpdu tg Uafnhef.",
+
+// Vigenere: beatnavy (a=0)
+"  J em ta Ahcsmcta fdeixigt ii rii fheczq xlivu gpysh mr popluvy tad jss aar bf gggi. I tz pmcqerxq tj ejze fl lddf mn muedp eifxasz.\n\
+  G xmle aeqcs wukeeibfv oy zy juo jrxr wdjm. Mf ba cjknenw, V wdjm reorr nssvegqem rii mxzbzpt sf fl cjknenw jhdjf xhxl sogmp htie off qetas om sisbft.\n\
+  Dd J em vnpossid B jigj dsnmvnpc us rxfinr cc aey mzyow aonigycpe. B jigj nekx rvzpz ifybro rp isvnpz yoh abq ooffvs mb enabte. B jigj bgcxct icjxhxe pvpppe gbr nnfgity fvtpvs yeoh rii egrmt.\n\
+  Gg M bxpohc b trbfoics sf pnr, D ujpl drek dbmta jiof nc fxylju qvilbnzpt. M wbyl bgwi nh vnamsqamvoi lpv ttxe kysx ig nnt ydxiha wcgdl mbtho zf lakzfpj us mr pohpbhel. Vf D yn wegvom, G xmle gafc dsmfnny. Gg rom V wdjm sbxl tcc mewyhl jpeirl bf ofpwe tcpjgoxew bvzp ni agq wdjm favx tccn yp ba eqcsc wtl.\n\
+  Wcco uuxftdmoid, luopje M bxpohc b trbfoics sf pnr, D yn vejhimce xo zvvz lbqe, knnf, qfvvbpe isnfek, nny bbxe hs bdpul. I pvlg cwedx nnnufvigt fppulek duzqumogf tj rii umzonr pj mr nbdjjxy. B jigj nekx ao jpbp ok jrdruin lgaocninmf ddqmsyty tj kz gonatmw brd bgs vjmmel br cysqfny tj riiik papqf.\n\
+  M wbyl icwir ybrbcu xhtg I vk br Afrrdabr, fbthogok fhe fmcfhof, eennprsbolz dpv mr ncogprs, tad ycemctgey rp xhx crdldmpers rfjgh fndz kz gonatmw gvex. V wdjm xrnft dl nc Ghq aib jr tar Uiguid Lgaoct sf Tzemgde."
 ];
 function loadSecretMessage( index ){
     var text = _secretMessages[index];
@@ -205,6 +223,8 @@ fieldset {
 <legend class="ui-widget">Secret Messages</legend>
 <input type="button" value="Load Secret Message 1" onclick="loadSecretMessage(0);" />
 <input type="button" value="Load Secret Message 2" onclick="loadSecretMessage(1);" />
+<input type="button" value="Load Secret Message 3" onclick="loadSecretMessage(2);" />
+<input type="button" value="Load Secret Message 4" onclick="loadSecretMessage(3);" />
 </fieldset>
 
 <!-- Cipher Text -->
