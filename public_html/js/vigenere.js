@@ -310,49 +310,6 @@ var VigenereCipher = {
         return freqs;
     },
     
-    //TODO left off here
-    calculateSumOfSquaresZ : function() {
-        return [1,2,1];
-        var text = this.extractAlphaUpper( this.cipherText );
-        var freqs = [];
-        var squares = [];
-        var squaresAvg = [];
-        
-        for( var keyLengthI = 0; keyLengthI = 5; keyLengthI++ ){
-            freqs[keyLengthI] = [];
-            var totalForAvg = 0;
-            
-            for( var keyPos = 0; keyPos <= keyLengthI; keyPos++ ){
-                squares[keyLengthI] = [];
-                
-                // Calculate frequencies
-                freqs[keyLengthI][keyPos] = ShiftCipher.frequenciesCountChars(text,keyPos,keyLengthI+1);
-                
-                // Find max; assume it equates to 'E'
-                var freqLength = freqs[keyLengthI][keyPos].length;
-                var indexOfMax = 0;
-                for( var i = 0; i < freqLength; i++ ){
-                    if( freqs[keyLengthI][keyPos][i] > freqs[keyLengthI][keyPos][indexOfMax] ){
-                        indexOfMax = i;
-                    }   // end if: new max
-                }   // end for: each letter
-                
-                var sum = 0;
-                for( var i = 0; i < freqLength; i++ ){
-                    var diff = ShiftCipher.ENGLISH_FREQUENCIES[i] - freqs[keyLengthI][keyPos][(i+22)%freqLength];
-                    sum += diff*diff;
-                }   // end for: each letter
-                squares[keyLengthI][keyPos] = sum;
-                totalForAvg += sum;
-            }   // end for: each key position
-            
-            squaresAvg[keyLengthI] = totalForAvg / (keyLengthI+1);
-            
-        }   // end for: each key length
-        
-         
-        return squaresAvg;
-    },
     
     
     calculateSumOfSquares : function(){
@@ -360,7 +317,7 @@ var VigenereCipher = {
         var text = this.cipherText;
         
         // Go through each key length
-        for( var keyLengthI = 0; keyLengthI < 20; keyLengthI++ ){
+        for( var keyLengthI = 0; keyLengthI <= 20; keyLengthI++ ){
             
             // Calc and average sumSquares for each character in the key
             var totalForAvg = 0;
@@ -440,7 +397,7 @@ var VigenereCipher = {
                     max: 20
                 },
                 yAxis: {
-                    title: {text: 'Matches'},
+                    title: {text: '1/SSE'},
                     labels: {enabled: false}
                 },
                 legend: {
@@ -458,7 +415,7 @@ var VigenereCipher = {
                     shared: true
                 },
                 series: [{
-                    name: 'Sum of Squares',
+                    name: '1/SSE',
                     type: 'line'
                 }, {
                     name: 'Key Length',
