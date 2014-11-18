@@ -488,6 +488,27 @@ var ShiftCipher = {
      */
     frequenciesPaddedAlphabet : function( text ){
         var rawFreqs = this.frequenciesCountChars( text, this.stepStart, this.step );
+        return this.padFrequencies(rawFreqs);
+ /*       var paddedFreqs = [];
+        var totalChars = 0;
+        for( var i = 0; i < this.ALPHABET_UPPER.length; i++ ){
+            var count = 0;
+            if( !isNaN( rawFreqs[this.ALPHABET_LOWER[i]] ) ){
+                count += rawFreqs[this.ALPHABET_LOWER[i]]
+            }
+            if( !isNaN( rawFreqs[this.ALPHABET_UPPER[i]] ) ){
+                count += rawFreqs[this.ALPHABET_UPPER[i]]
+            }
+            paddedFreqs[ i ] = count;
+            totalChars += count;
+        }
+        for( var i = 0; i < paddedFreqs.length; i++ ){
+            paddedFreqs[i] = paddedFreqs[i] == null || totalChars == 0 ? 0.0 : 1.0 * paddedFreqs[i] / totalChars;
+        }
+        return paddedFreqs; */
+    },
+    
+    padFrequencies : function( rawFreqs ){
         var paddedFreqs = [];
         var totalChars = 0;
         for( var i = 0; i < this.ALPHABET_UPPER.length; i++ ){
@@ -506,6 +527,21 @@ var ShiftCipher = {
         }
         return paddedFreqs;
     },
+    
+    alignToE : function( paddedFreqs ){
+        var indexOfMax = 0;
+        var alignedFreqs = [];
+        var len = paddedFreqs.length;
+        for( var i = 0; i < len; i++ ){
+            if( paddedFreqs[i] > paddedFreqs[indexOfMax] ){
+                indexOfMax = i;
+            }
+        }   // end for: looking for max
+        
+        // Shift array so that indexOfMax is in position 4 (the letter 'E')
+        return this.shiftArray( paddedFreqs, 26 + indexOfMax - 4 );
+    },
+    
     
     dotProduct : function( u, v ){
         var len = Math.min( u.length, v.length );

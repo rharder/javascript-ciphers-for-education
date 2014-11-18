@@ -310,6 +310,41 @@ var VigenereCipher = {
         return freqs;
     },
     
+    
+    
+    calculateSumOfSquares : function(){
+        var sumSquaresByKeyLength = []; // Zero index is key length one
+        var text = this.cipherText;
+        
+        // Go through each key length
+        for( var keyLengthI = 0; keyLengthI <= 20; keyLengthI++ ){
+            
+            // Calc and average sumSquares for each character in the key
+            var totalForAvg = 0;
+            for( var keyPosI = 0; keyPosI <= keyLengthI; keyPosI++ ){
+                var rawCount     = ShiftCipher.frequenciesCountChars(text,keyPosI,keyLengthI+1);
+                var paddedFreqs  = ShiftCipher.padFrequencies( rawCount );
+                var alignedFreqs = ShiftCipher.alignToE( paddedFreqs );
+                
+                // Calc the differences and square them
+                var freqLength = alignedFreqs.length;
+                var sumSquares = 0;
+                var diff;
+                for( var i = 0; i < freqLength; i++ ){
+                    diff = alignedFreqs[i] - ShiftCipher.ENGLISH_FREQUENCIES[i];
+                    sumSquares += diff*diff;
+                }
+                totalForAvg += sumSquares;
+                
+            }   // end for: key pos
+            sumSquaresByKeyLength[keyLengthI] = 1/(totalForAvg / (keyLengthI + 1));
+        }   // end for: each keylength
+        
+        return sumSquaresByKeyLength;
+    },
+    
+    
+    
     /**
      * Extracts the alpha characters from the cipher text
      * and ensures they are all uppercase.
@@ -362,7 +397,7 @@ var VigenereCipher = {
                     max: 20
                 },
                 yAxis: {
-                    title: {text: 'Matches'},
+                    title: {text: '1/SSE'},
                     labels: {enabled: false}
                 },
                 legend: {
@@ -380,10 +415,8 @@ var VigenereCipher = {
                     shared: true
                 },
                 series: [{
-                    name: 'Shift Matches',
-                    type: 'line',
-                    //data: this.ENGLISH_FREQUENCIES,
-                    pointPadding: -0.3
+                    name: '1/SSE',
+                    type: 'line'
                 }, {
                     name: 'Key Length',
                     type: 'column',
@@ -395,22 +428,29 @@ var VigenereCipher = {
     
     
     
-    
     updateKeyLengthChart : function(toUpdate){
         var This = this;
         var func = function(){
             //var dots = This.dotProductCoincidence;
-            var matches = This.calculateMatches();
+            //var matches = This.calculateMatches();
+            var ss = null;
             if( toUpdate == null || toUpdate === 'matches' ){
                 //This._dotChart.series[0].setData( dots == null ? [] : dots );
-                This._keyLengthChart.series[0].setData( matches == null ? [] : matches );
+                //This._keyLengthChart.series[0].setData( matches == null ? [] : matches );
+            }
+            if( toUpdate == null || toUpdate === 'sumSquares' ){
+                ss = This.calculateSumOfSquares();
+                This._keyLengthChart.series[0].setData( ss == null ? [] : ss );
             }
             if( toUpdate == null || toUpdate === 'keyLength' ){
+                if( ss == null ) {
+                    ss = This.calculateSumOfSquares();
+                }
                 var lengthMarker = [];
-                for( var i = 0; i < 26; i++ ){
+                for( var i = 0; i < ss.length; i++ ){
                     lengthMarker[i] = 0;
                 }
-                lengthMarker[ This.keyLength-1 ] = matches[ This.keyLength-1 ];
+                lengthMarker[ This.keyLength-1 ] = ss[ This.keyLength-1 ];
                 if( This._keyLengthChart != null ){
                     This._keyLengthChart.series[1].setData( lengthMarker == null ? [] : lengthMarker );
                 }
