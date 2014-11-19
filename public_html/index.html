@@ -258,6 +258,7 @@ fieldset {
     <div id="cipherTab_Vigenere" class="jquery-shadow jquery-shadow-standard">
         <div>
             <div class="instructions">
+                <span style="float:right; font-size: 10px; padding: 2px; border: solid black 1px; corner-radius: 2px" onclick="vigenereCipher.guess();">S</span>
                 Instructions: First find a probable key length.
                 One way is to look for a spike in the Sum of the Squares of the
                 Errors chart, indicating how closely matched are the frequencies
@@ -266,7 +267,6 @@ fieldset {
                 key length one character at a time, and inspect the frequency
                 analysis for each key character position looking for a clear spike
                 that probably corresponds to the letter 'E'.
-                <span style="float:right; font-size: 10px; padding: 2px; border: solid black 1px; corner-radius: 2px" onclick="vigenereCipher.guess();">S</span>
             </div>
             <div id="vigenereContent"  ></div>
         </div>
