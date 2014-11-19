@@ -258,9 +258,14 @@ fieldset {
     <div id="cipherTab_Vigenere" class="jquery-shadow jquery-shadow-standard">
         <div>
             <div class="instructions">
-                Instructions: First add letters to the key until dot products exhibit a clear spike at one letter.
-                Then adjust each shift to align the ciphertext's most common letter 
-                with the English most common letter 'E'.
+                Instructions: First find a probable key length.
+                One way is to look for a spike in the Sum of the Squares of the
+                Errors chart, indicating how closely matched are the frequencies
+                of each character set with the English language frequencies.
+                The "old fashioned" way of doing the same thing is to increase the
+                key length one character at a time, and inspect the frequency
+                analysis for each key character position looking for a clear spike
+                that probably corresponds to the letter 'E'.
                 <span style="float:right; font-size: 10px; padding: 2px; border: solid black 1px; corner-radius: 2px" onclick="vigenereCipher.guess();">S</span>
             </div>
             <div id="vigenereContent"  ></div>
