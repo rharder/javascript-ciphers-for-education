@@ -70,6 +70,7 @@ function pageInit(){
     pageInitShiftCipher( shiftCipher, 'shiftContent');
     pageInitVigenereCipher(vigenereCipher, 'vigenereContent');
     
+    // Floating plaintext box effect
     $('fieldset.plaintext').hcSticky({
         onStart: function(){
             // would like some kind of shadow effect here
@@ -77,8 +78,7 @@ function pageInit(){
         onStop: function(){
         }
     });
-  // <div id="box2" onmouseover="jQuery(this).stop().animate({boxShadow: '-30px 0 30px #699, 30px 0 30px #969, 0 -30px 30px #996, 0 30px 30px #669'})" onmouseout="jQuery(this).stop().animate({boxShadow: '0 0 10px #699, 0 0 10px #969, 0 0 10px #996, 0 0 30px #669'})" style="box-shadow: rgb(102, 153, 153) 0px 0px 10px 0px, rgb(153, 102, 153) 0px 0px 10px 0px, rgb(153, 153, 102) 0px 0px 10px 0px, rgb(102, 102, 153) 0px 0px 30px 0px;">mouse over</div>
-        $('#ciphertext').stop().animate({boxShadow: '-30px 0 30px #699, 30px 0 30px #969, 0 -30px 30px #996, 0 30px 30px #669'});
+    $('#ciphertext').stop().animate({boxShadow: '-30px 0 30px #699, 30px 0 30px #969, 0 -30px 30px #996, 0 30px 30px #669'});
     
     // Make all these fieldsets disappear when their legends are clicked
     $(function(){
@@ -86,22 +86,16 @@ function pageInit(){
        $(this).siblings().slideToggle("slow");
        
        // Some legends have [–] or [+] in their title
-       var oldVal = $(this).text();
-       if( oldVal.indexOf('[\u2013]') == 0 ){ // EN-Dash
-         $(this).text( oldVal.replace(/\[–\]/, '[+]') );
-       } else {
-         $(this).text( oldVal.replace(/\[\+\]/, '[\u2013]') );
-       }
+       //var oldVal = $(this).text();
+       //if( oldVal.indexOf('[\u2013]') == 0 ){ // EN-Dash
+       //  $(this).text( oldVal.replace(/\[–\]/, '[+]') );
+       //} else {
+       //  $(this).text( oldVal.replace(/\[\+\]/, '[\u2013]') );
+       //}
        
       });
     });
     
-    //$('fieldset.plaintext').animate({boxShadow: '0 0 30px #44f'});
-    //$('fieldset.plaintext').shadow({type:'sides', sides:'hz-1'});
-    //$('fieldset.plaintext, fieldset.plaintext textarea').shadow({type:'sides', sides:'hz-1'});
-    //$('fieldset.plaintext, fieldset.plaintext textarea').shadow('lifted');
-    //$('fieldset.plaintext').shadow('lifted');
-    //$('fieldset, #cipherTabs > div').shadow();
     $('fieldset').shadow();
     
     $( '#cipherTabs' ).tabs({
@@ -110,7 +104,7 @@ function pageInit(){
         }
     });
     
-    loadSecretMessage(0);  // Pre-load a message
+    //loadSecretMessage(0);  // Pre-load a message
     $(window).resize();
 }   // end pageInit
 
@@ -245,6 +239,7 @@ fieldset {
 <fieldset class="secretMessages">
 <legend class="ui-widget">Secret Messages</legend>
 <script type="text/javascript">
+    // Make buttons for loading each secret message
     for( var i = 0; i < _secretMessages.length; i++ ){
         document.write('<input type="button" value="Load Secret Message ' + (i+1) + '" onclick="loadSecretMessage(' + i + ');" /> ');
     }
