@@ -1,5 +1,7 @@
-javascript-ciphers-for-education
+Javascript Ciphers for Education
 ================================
+
+For the impatient, try it here: http://cipher.iharder.net
 
 Javscript-based tools for helping teach ciphers
 
