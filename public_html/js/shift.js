@@ -53,18 +53,7 @@ var ShiftCipher = {
      * @returns {undefined}
      */
     init : function( domID ){
-  /*<div class="shift">
-    <div class="controls" >
-        <div>Original Shift</div>
-        <input type="text" id="sc_shiftAlpha" style="width:2em; text-align:center; font-size: larger" value="A" />
-        <input type="text" id="sc_shiftNum" style="width:2em; text-align:center; font-size: larger" value="0" />
-        <div id="sc_slider" class="slider" >&nbsp;</div>
-        <input type="button" value="Guess" onclick="shiftCipher.guess();" />
-    </div>
-    <div id="sc_freqChart" class="freqChart chart" ></div>
-    <div id="sc_dotChart" class="dotChart chart" ></div>
-  </div> */        
-        
+
         this._toUpdate = {};
         this._plainTextCache = {};
         this._listeners = {};
@@ -597,6 +586,7 @@ var ShiftCipher = {
                 legend: {
                     layout: 'vertical',
                     backgroundColor: '#FFFFFF',
+                    opacity: 0.5,
                     align: 'right',
                     verticalAlign: 'top',
                     x: -5,
