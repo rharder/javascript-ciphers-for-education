@@ -104,6 +104,14 @@ function pageInit(){
         }
     });
     
+    $( ".button0" )
+        .effect("highlight", { color: "#FFAAAA" }, 1000)
+        .effect("highlight", { color: "#FFAAAA" }, 1000)
+        .effect("highlight", { color: "#FFAAAA" }, 1000)
+        .effect("highlight", { color: "#FFAAAA" }, 1000)
+        .effect("highlight", { color: "#FFAAAA" }, 1000);
+    //$( ".button0" ).toggle("highlight").toggle("highlight").toggle("highlight").toggle("highlight").toggle("highlight").toggle("highlight");
+    
     //loadSecretMessage(0);  // Pre-load a message
     $(window).resize();
 }   // end pageInit
@@ -238,12 +246,14 @@ fieldset {
 
 <fieldset class="secretMessages">
 <legend class="ui-widget">Secret Messages</legend>
+<div class="buttons">
 <script type="text/javascript">
     // Make buttons for loading each secret message
     for( var i = 0; i < _secretMessages.length; i++ ){
-        document.write('<input type="button" value="Load Secret Message ' + (i+1) + '" onclick="loadSecretMessage(' + i + ');" /> ');
+        document.write('<input class="button' + i + '" type="button" value="Load Secret Message ' + (i+1) + '" onclick="loadSecretMessage(' + i + ');" /> ');
     }
 </script>
+</div>
 </fieldset>
 
 <!-- Cipher Text -->
