@@ -1,7 +1,0 @@
-http://nayuki.eigenstate.org/res/automatic-caesar-cipher-breaker-javascript.js
-
-
-http://nayuki.eigenstate.org/page/automatic-caesar-cipher-breaker-javascript
-
-http://nayuki.eigenstate.org/page/vigenere-cipher-javascript
-
