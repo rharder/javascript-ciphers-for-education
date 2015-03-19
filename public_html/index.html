@@ -52,6 +52,7 @@ div.controls .slider {width:85%; margin: 0.5em auto }
 .keyLengthChart { width: 76% }
 .shiftAlpha, .shiftNum {width:2em; text-align:center; font-size: larger; margin: 2px}
 div.vigenere_controls { margin-bottom: 1em}
+input.selected { font-weight: bold; background-color: #DDD }
 </style>
 
 <script language="javascript"><!--
@@ -222,11 +223,21 @@ Jhicl byivb tpvmavldvs itccis’l khmp wmie vft pvrm,\n\
 Rnl yotu tpviz davyowus kyeig wpzlmj avp sxvasj\n\
 Tprt nfuoyt eztp ls cgov Jaqet Kiiagiv’j dip."
 ];
-function loadSecretMessage( index ){
+
+function loadSecretMessage( index, elm ){
+    
     var text = _secretMessages[index];
     var el = document.getElementById('ciphertext');
     el.value = text;
     $('#ciphertext').trigger('propertychange');
+    
+    for( var i = 0; i < _secretMessages.length; i++ ){
+        if( i == index ){
+            $( ".button" + i ).addClass('selected');
+        } else {
+            $( ".button" + i ).removeClass('selected');
+        }
+    }
 }
 
 // --></script>
@@ -250,7 +261,7 @@ fieldset {
 <script type="text/javascript">
     // Make buttons for loading each secret message
     for( var i = 0; i < _secretMessages.length; i++ ){
-        document.write('<input class="button' + i + '" type="button" value="Load Secret Message ' + (i+1) + '" onclick="loadSecretMessage(' + i + ');" /> ');
+        document.write('<input class="msg button' + i + '" type="button" value="Load Secret Message ' + (i+1) + '" onclick="loadSecretMessage(' + i + ',this);" /> ');
     }
 </script>
 </div>
